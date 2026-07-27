@@ -1,9 +1,28 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
 import './Login.css';
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errores, setErrores] = useState({});
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const nuevosErrores = {};
+
+    if (!email.trim()) nuevosErrores.email = 'El correo es obligatorio.';
+    if (!password.trim()) nuevosErrores.password = 'La contraseña es obligatoria.';
+
+    setErrores(nuevosErrores);
+
+    if (Object.keys(nuevosErrores).length === 0) {
+      navigate('/dashboard');
+    }
+  };
+
   return (
     <div className="login-container">
       {/* Columna Izquierda - Hero / Branding */}
@@ -36,7 +55,7 @@ export default function Login() {
             </p>
           </div>
 
-          <form className="login-form" onSubmit={(e) => e.preventDefault()}>
+          <form className="login-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="email" className="form-label">
                 Correo electrónico
@@ -46,7 +65,10 @@ export default function Login() {
                 type="email"
                 className="form-input"
                 placeholder="nombre@ejemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
+              {errores.email && <p className="form-error">{errores.email}</p>}
             </div>
 
             <div className="form-group">
@@ -63,7 +85,10 @@ export default function Login() {
                 type="password"
                 className="form-input"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
+              {errores.password && <p className="form-error">{errores.password}</p>}
             </div>
 
             <button type="submit" className="login-submit-btn">

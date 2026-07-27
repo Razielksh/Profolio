@@ -1,9 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
 import './Login.css';
 
 export default function Create_account() {
+    const [nombre, setNombre] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [errores, setErrores] = useState({});
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const nuevosErrores = {};
+
+        if (!nombre.trim()) nuevosErrores.nombre = 'El nombre es obligatorio.';
+        if (!email.trim()) nuevosErrores.email = 'El correo es obligatorio.';
+        if (!password.trim()) {
+            nuevosErrores.password = 'La contraseña es obligatoria.';
+        } else if (password.length < 8) {
+            nuevosErrores.password = 'La contraseña debe tener al menos 8 caracteres.';
+        }
+
+        setErrores(nuevosErrores);
+
+        if (Object.keys(nuevosErrores).length === 0) {
+            alert('Cuenta creada OK (sin funcionalidad por ahora)');
+        }
+    };
+
     return (
         <div className="login-container">
             {/* Columna Izquierda - Hero / Branding */}
@@ -31,11 +55,11 @@ export default function Create_account() {
                     <div className="login-card-header">
                         <h2 className="login-card-title">Crea tu cuenta</h2>
                         <p className="login-card-subtitle">
-                            únete a miles de profesionales construyendo su futuro hoy
+                            Únete a miles de profesionales construyendo su futuro hoy
                         </p>
                     </div>
 
-                    <form className="login-form" onSubmit={(e) => e.preventDefault()}>
+                    <form className="login-form" onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label htmlFor="name" className="form-label">
                                 Nombre completo
@@ -45,35 +69,40 @@ export default function Create_account() {
                                 type="text"
                                 className="form-input"
                                 placeholder="Ej. Juan Pérez"
+                                value={nombre}
+                                onChange={(e) => setNombre(e.target.value)}
                             />
+                            {errores.nombre && <p className="form-error">{errores.nombre}</p>}
                         </div>
 
                         <div className="form-group">
-                            <div className="label-row">
-                                <label htmlFor="email" className="form-label">
-                                    Correo electrónico
-                                </label>
-                            </div>
+                            <label htmlFor="email" className="form-label">
+                                Correo electrónico
+                            </label>
                             <input
                                 id="email"
                                 type="email"
                                 className="form-input"
                                 placeholder="nombre@ejemplo.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
+                            {errores.email && <p className="form-error">{errores.email}</p>}
                         </div>
 
                         <div className="form-group">
-                            <div className="label-row">
-                                <label htmlFor="password" className="form-label">
-                                    Contraseña
-                                </label>
-                            </div>
+                            <label htmlFor="password" className="form-label">
+                                Contraseña
+                            </label>
                             <input
                                 id="password"
                                 type="password"
                                 className="form-input"
-                                placeholder="Mínimo 8 carácteres"
+                                placeholder="Mínimo 8 caracteres"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                             />
+                            {errores.password && <p className="form-error">{errores.password}</p>}
                         </div>
 
                         <button type="submit" className="login-submit-btn">
