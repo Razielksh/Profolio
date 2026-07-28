@@ -71,4 +71,11 @@ public class User {
     public void setName(String name) {
         this.nombre = name;
     }
+
+    public static class UserBuilder {
+        public UserBuilder name(String name) {
+            this.nombre = name;
+            return this;
+        }
+    }
 }

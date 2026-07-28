@@ -35,7 +35,7 @@ public class DataInitializer implements CommandLineRunner {
         // 2. Crear Administrador por defecto si no existe
         if (!userRepository.existsByEmail("admin@profolio.com")) {
             User adminUser = User.builder()
-                    .name("Administrador General")
+                    .nombre("Administrador General")
                     .email("admin@profolio.com")
                     .password(passwordEncoder.encode("Admin123!"))
                     .roles(Set.of(adminRole, userRole))
@@ -47,7 +47,7 @@ public class DataInitializer implements CommandLineRunner {
         // 3. Crear Reclutador por defecto si no existe
         if (!userRepository.existsByEmail("reclutador@profolio.com")) {
             User reclutadorUser = User.builder()
-                    .name("Carlos Reclutador")
+                    .nombre("Carlos Reclutador")
                     .email("reclutador@profolio.com")
                     .password(passwordEncoder.encode("Reclutador123!"))
                     .roles(Set.of(reclutadorRole, userRole))
