@@ -11,6 +11,20 @@ export default function Login({ onLogin }) {
   const [errores, setErrores] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const handleEmailChange = (val) => {
+    setEmail(val);
+    if (errores.email) {
+      setErrores(prev => ({ ...prev, email: val.trim() ? '' : 'El correo es obligatorio.' }));
+    }
+  };
+
+  const handlePasswordChange = (val) => {
+    setPassword(val);
+    if (errores.password) {
+      setErrores(prev => ({ ...prev, password: val.trim() ? '' : 'La contraseña es obligatoria.' }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const nuevosErrores = {};
@@ -31,7 +45,6 @@ export default function Login({ onLogin }) {
 
       if (onLogin) onLogin(usuarioActivo);
 
-      // Redirigir según el rol del usuario
       if (usuarioActivo.rol === 'Admin') {
         navigate('/admin/usuarios');
       } else if (usuarioActivo.rol === 'Reclutador') {
@@ -85,7 +98,7 @@ export default function Login({ onLogin }) {
           <form className="login-form" onSubmit={handleSubmit}>
             {errores.general && (
               <div className="form-error" style={{ marginBottom: '16px', fontSize: '0.9rem', fontWeight: '600' }}>
-                ⚠️ {errores.general}
+                {errores.general}
               </div>
             )}
 
@@ -99,7 +112,7 @@ export default function Login({ onLogin }) {
                 className="form-input"
                 placeholder="nombre@ejemplo.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => handleEmailChange(e.target.value)}
                 disabled={loading}
               />
               {errores.email && <p className="form-error">{errores.email}</p>}
@@ -120,7 +133,7 @@ export default function Login({ onLogin }) {
                 className="form-input"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handlePasswordChange(e.target.value)}
                 disabled={loading}
               />
               {errores.password && <p className="form-error">{errores.password}</p>}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
 import './GestionUsuarios.css';
 
@@ -14,6 +14,7 @@ const usuariosDefectoAdmin = [
 ];
 
 export default function GestionUsuarios() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('Todos');
@@ -42,12 +43,20 @@ export default function GestionUsuarios() {
 
   const cargarUsuarios = () => {
     const guardados = localStorage.getItem('usuarios_profolio');
-    if (guardados) {
-      setUsers(JSON.parse(guardados));
-    } else {
-      localStorage.setItem('usuarios_profolio', JSON.stringify(usuariosDefectoAdmin));
-      setUsers(usuariosDefectoAdmin);
-    }
+    let listaExistente = guardados ? JSON.parse(guardados) : [];
+
+    // Agregar los usuarios demo del admin si no están ya en la lista
+    usuariosDefectoAdmin.forEach((demo) => {
+      const yaExiste = listaExistente.some(
+        (u) => u.email.toLowerCase() === demo.email.toLowerCase()
+      );
+      if (!yaExiste) {
+        listaExistente.push(demo);
+      }
+    });
+
+    localStorage.setItem('usuarios_profolio', JSON.stringify(listaExistente));
+    setUsers(listaExistente);
   };
 
   const guardarListaEnStorage = (nuevaLista) => {
@@ -184,12 +193,20 @@ export default function GestionUsuarios() {
         </div>
 
         <div className="admin-nav-right">
-          <Link to="/perfil" className="admin-profile-btn" title="Perfil">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
+          <button
+            className="admin-logout-btn"
+            onClick={() => {
+              localStorage.removeItem('usuario_activo');
+              navigate('/');
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-          </Link>
+            Cerrar sesión
+          </button>
         </div>
       </header>
 

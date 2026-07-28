@@ -8,6 +8,7 @@ export default function VerCvReclutador() {
   const [channelEmail, setChannelEmail] = useState(true);
   const [channelSms, setChannelSms] = useState(false);
   const [channelWhatsapp, setChannelWhatsapp] = useState(false);
+  const [sentNotification, setSentNotification] = useState(false);
 
   return (
     <div className="view-cv-page">
@@ -41,6 +42,27 @@ export default function VerCvReclutador() {
           </button>
         </div>
       </header>
+
+      {sentNotification && (
+        <div style={{
+          position: 'fixed',
+          top: '80px',
+          right: '24px',
+          backgroundColor: '#10B981',
+          color: '#FFFFFF',
+          padding: '12px 20px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          fontWeight: '600',
+          fontSize: '0.95rem',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          ✓ Mensaje enviado exitosamente a Alex Morgan
+        </div>
+      )}
 
       {/* Contenido Hoja de CV de Alex Morgan */}
       <main className="view-cv-body">
@@ -203,8 +225,9 @@ export default function VerCvReclutador() {
                   type="button"
                   className="btn-modal-send"
                   onClick={() => {
-                    alert('Mensaje enviado a Alex Morgan');
+                    setSentNotification(true);
                     setShowModalContact(false);
+                    setTimeout(() => setSentNotification(false), 4000);
                   }}
                 >
                   ▷ Enviar mensaje

@@ -39,117 +39,118 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(GlobalExceptionHandler.class)
 class AuthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private AuthService authService;
+        @MockitoBean
+        private AuthService authService;
 
-    @MockitoBean
-    private JwtTokenProvider jwtTokenProvider;
+        @MockitoBean
+        private JwtTokenProvider jwtTokenProvider;
 
-    @MockitoBean
-    private UserDetailsServiceImpl userDetailsService;
+        @MockitoBean
+        private UserDetailsServiceImpl userDetailsService;
 
-    @MockitoBean
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+        @MockitoBean
+        private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    @MockitoBean
-    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
+        @MockitoBean
+        private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-    private RegisterRequestDto validRegisterDto;
-    private LoginRequestDto validLoginDto;
-    private AuthResponseDto mockAuthResponse;
+        private RegisterRequestDto validRegisterDto;
+        private LoginRequestDto validLoginDto;
+        private AuthResponseDto mockAuthResponse;
 
-    @BeforeEach
-    void setUp() {
-        validRegisterDto = RegisterRequestDto.builder()
-                .name("Juan Perez")
-                .email("juan.perez@example.com")
-                .password("Password123!")
-                .build();
+        @BeforeEach
+        void setUp() {
+                validRegisterDto = RegisterRequestDto.builder()
+                                .name("Juan Perez")
+                                .email("juan.perez@example.com")
+                                .password("Password123!")
+                                .build();
 
-        validLoginDto = LoginRequestDto.builder()
-                .email("juan.perez@example.com")
-                .password("Password123!")
-                .build();
+                validLoginDto = LoginRequestDto.builder()
+                                .email("juan.perez@example.com")
+                                .password("Password123!")
+                                .build();
 
-        UserResponseDto userDto = UserResponseDto.builder()
-                .id(1L)
-                .name("Juan Perez")
-                .email("juan.perez@example.com")
-                .roles(Set.of("ROLE_USER"))
-                .build();
+                UserResponseDto userDto = UserResponseDto.builder()
+                                .id(1L)
+                                .name("Juan Perez")
+                                .email("juan.perez@example.com")
+                                .roles(Set.of("ROLE_USER"))
+                                .build();
 
-        mockAuthResponse = AuthResponseDto.builder()
-                .token("mocked-jwt-token")
-                .tokenType("Bearer")
-                .user(userDto)
-                .build();
-    }
+                mockAuthResponse = AuthResponseDto.builder()
+                                .token("mocked-jwt-token")
+                                .tokenType("Bearer")
+                                .user(userDto)
+                                .build();
+        }
 
-    @Test
-    @DisplayName("POST /api/auth/register debe retornar 201 Created cuando los datos son válidos")
-    void register_ShouldReturn201Created_WhenRequestIsValid() throws Exception {
-        when(authService.register(any(RegisterRequestDto.class))).thenReturn(mockAuthResponse);
+        @Test
+        @DisplayName("POST /api/auth/register debe retornar 201 Created cuando los datos son válidos")
+        void register_ShouldReturn201Created_WhenRequestIsValid() throws Exception {
+                when(authService.register(any(RegisterRequestDto.class))).thenReturn(mockAuthResponse);
 
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.token").value("mocked-jwt-token"))
-                .andExpect(jsonPath("$.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.user.email").value("juan.perez@example.com"));
-    }
+                mockMvc.perform(post("/api/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(validRegisterDto)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.token").value("mocked-jwt-token"))
+                                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                                .andExpect(jsonPath("$.user.email").value("juan.perez@example.com"));
+        }
 
-    @Test
-    @DisplayName("POST /api/auth/register debe retornar 400 Bad Request cuando falla Bean Validation")
-    void register_ShouldReturn400BadRequest_WhenValidationFails() throws Exception {
-        RegisterRequestDto invalidDto = RegisterRequestDto.builder()
-                .name("") // Vacio
-                .email("email-invalido") // Formato invalido
-                .password("123") // Muy corta (<6)
-                .build();
+        @Test
+        @DisplayName("POST /api/auth/register debe retornar 400 Bad Request cuando falla Bean Validation")
+        void register_ShouldReturn400BadRequest_WhenValidationFails() throws Exception {
+                RegisterRequestDto invalidDto = RegisterRequestDto.builder()
+                                .name("") // Vacio
+                                .email("email-invalido") // Formato invalido
+                                .password("123") // Muy corta (<6)
+                                .build();
 
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.fieldErrors.name").exists())
-                .andExpect(jsonPath("$.fieldErrors.email").exists())
-                .andExpect(jsonPath("$.fieldErrors.password").exists());
-    }
+                mockMvc.perform(post("/api/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidDto)))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.error").value("Bad Request"))
+                                .andExpect(jsonPath("$.fieldErrors.name").exists())
+                                .andExpect(jsonPath("$.fieldErrors.email").exists())
+                                .andExpect(jsonPath("$.fieldErrors.password").exists());
+        }
 
-    @Test
-    @DisplayName("POST /api/auth/register debe retornar 400 Bad Request cuando el email ya existe")
-    void register_ShouldReturn400BadRequest_WhenUserAlreadyExists() throws Exception {
-        when(authService.register(any(RegisterRequestDto.class)))
-                .thenThrow(new UserAlreadyExistsException("El correo ya está registrado en el sistema"));
+        @Test
+        @DisplayName("POST /api/auth/register debe retornar 400 Bad Request cuando el email ya existe")
+        void register_ShouldReturn400BadRequest_WhenUserAlreadyExists() throws Exception {
+                when(authService.register(any(RegisterRequestDto.class)))
+                                .thenThrow(new UserAlreadyExistsException(
+                                                "El correo ya está registrado en el sistema"));
 
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("El correo ya está registrado en el sistema"));
-    }
+                mockMvc.perform(post("/api/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(validRegisterDto)))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.message").value("El correo ya está registrado en el sistema"));
+        }
 
-    @Test
-    @DisplayName("POST /api/auth/login debe retornar 200 OK cuando las credenciales son válidas")
-    void login_ShouldReturn200OK_WhenCredentialsAreValid() throws Exception {
-        when(authService.login(any(LoginRequestDto.class))).thenReturn(mockAuthResponse);
+        @Test
+        @DisplayName("POST /api/auth/login debe retornar 200 OK cuando las credenciales son válidas")
+        void login_ShouldReturn200OK_WhenCredentialsAreValid() throws Exception {
+                when(authService.login(any(LoginRequestDto.class))).thenReturn(mockAuthResponse);
 
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validLoginDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("mocked-jwt-token"))
-                .andExpect(jsonPath("$.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.user.email").value("juan.perez@example.com"));
-    }
+                mockMvc.perform(post("/api/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(validLoginDto)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.token").value("mocked-jwt-token"))
+                                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                                .andExpect(jsonPath("$.user.email").value("juan.perez@example.com"));
+        }
 }
