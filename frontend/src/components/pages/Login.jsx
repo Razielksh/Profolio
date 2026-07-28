@@ -3,7 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
 import './Login.css';
 
-export default function Login() {
+const usuariosDefecto = [
+  { nombre: 'Usuario Demo', email: 'user@ejemplo.com', password: 'password123', rol: 'Usuario' },
+  { nombre: 'Admin Demo', email: 'admin@ejemplo.com', password: 'password123', rol: 'Admin' },
+  { nombre: 'Reclutador Demo', email: 'reclutador@ejemplo.com', password: 'password123', rol: 'Reclutador' }
+];
+
+export default function Login({ onLogin }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,10 +22,42 @@ export default function Login() {
     if (!email.trim()) nuevosErrores.email = 'El correo es obligatorio.';
     if (!password.trim()) nuevosErrores.password = 'La contraseña es obligatoria.';
 
+    // Obtener lista de usuarios almacenada o inicializar con los por defecto
+    const guardados = localStorage.getItem('usuarios_profolio');
+    let listaUsuarios = [];
+
+    if (guardados) {
+      listaUsuarios = JSON.parse(guardados);
+    } else {
+      listaUsuarios = usuariosDefecto;
+      localStorage.setItem('usuarios_profolio', JSON.stringify(usuariosDefecto));
+    }
+
+    // Buscar si el correo y la contraseña coinciden
+    const usuarioEncontrado = listaUsuarios.find(
+      (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password.trim()
+    );
+
+    if (email.trim() && password.trim() && !usuarioEncontrado) {
+      nuevosErrores.general = 'Correo o contraseña incorrectos.';
+    }
+
     setErrores(nuevosErrores);
 
-    if (Object.keys(nuevosErrores).length === 0) {
-      navigate('/dashboard');
+    if (Object.keys(nuevosErrores).length === 0 && usuarioEncontrado) {
+      // Guardar el usuario activo en localStorage
+      localStorage.setItem('usuario_activo', JSON.stringify(usuarioEncontrado));
+
+      if (onLogin) onLogin(usuarioEncontrado);
+
+      // Redirigir según el rol del usuario
+      if (usuarioEncontrado.rol === 'Admin') {
+        navigate('/admin/usuarios');
+      } else if (usuarioEncontrado.rol === 'Reclutador') {
+        navigate('/reclutador/directorio');
+      } else {
+        navigate('/dashboard');
+      }
     }
   };
 
@@ -56,6 +94,12 @@ export default function Login() {
           </div>
 
           <form className="login-form" onSubmit={handleSubmit}>
+            {errores.general && (
+              <div className="form-error" style={{ marginBottom: '16px', fontSize: '0.9rem', fontWeight: '600' }}>
+                ⚠️ {errores.general}
+              </div>
+            )}
+
             <div className="form-group">
               <label htmlFor="email" className="form-label">
                 Correo electrónico

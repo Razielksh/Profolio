@@ -4,6 +4,10 @@ import Navbar from '../Navbar';
 import './Dashboard.css';
 
 export default function Dashboard() {
+  // Obtener usuario activo del localStorage
+  const usuarioActivo = JSON.parse(localStorage.getItem('usuario_activo') || 'null');
+  const nombreMostrar = usuarioActivo ? usuarioActivo.nombre : 'Usuario';
+
   return (
     <div className="dashboard-page">
       <Navbar />
@@ -12,7 +16,7 @@ export default function Dashboard() {
         {/* Encabezado */}
         <div className="dashboard-header">
           <div>
-            <h1 className="dashboard-title">¡Bienvenido de nuevo, Alex!</h1>
+            <h1 className="dashboard-title">¡Bienvenido de nuevo, {nombreMostrar}!</h1>
             <p className="dashboard-subtitle">Aquí están tus CVs recientes y borradores.</p>
           </div>
           <Link to="/creacion-doc" className="btn-crear-cv" style={{ textDecoration: 'none', display: 'inline-block' }}>

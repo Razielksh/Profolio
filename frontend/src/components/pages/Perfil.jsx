@@ -5,6 +5,19 @@ import './Perfil.css';
 export default function Perfil() {
   const [showModalDelete, setShowModalDelete] = useState(false);
 
+  // Obtener usuario activo del localStorage
+  const usuarioActivo = JSON.parse(localStorage.getItem('usuario_activo') || 'null');
+  const nombreUsuario = usuarioActivo ? usuarioActivo.nombre : 'Jane Doe';
+  const emailUsuario = usuarioActivo ? usuarioActivo.email : 'jane.doe@example.com';
+  
+  // Obtener iniciales para el avatar
+  const iniciales = nombreUsuario
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <div className="perfil-page">
       <Navbar />
@@ -13,10 +26,10 @@ export default function Perfil() {
         {/* Columna Izquierda - Avatar & Datos básicos */}
         <aside className="perfil-sidebar">
           <div className="perfil-avatar-circle">
-            <span>JD</span>
+            <span>{iniciales}</span>
           </div>
-          <h2 className="perfil-sidebar-name">Jane Doe</h2>
-          <p className="perfil-sidebar-email">jane.doe@example.com</p>
+          <h2 className="perfil-sidebar-name">{nombreUsuario}</h2>
+          <p className="perfil-sidebar-email">{emailUsuario}</p>
         </aside>
 
         {/* Columna Derecha - Tarjeta con formulario */}
@@ -30,11 +43,11 @@ export default function Perfil() {
               <div className="perfil-form-row">
                 <div className="perfil-form-group">
                   <label className="perfil-label">Nombre completo</label>
-                  <input type="text" className="perfil-input" defaultValue="Jane Doe" />
+                  <input type="text" className="perfil-input" defaultValue={nombreUsuario} />
                 </div>
                 <div className="perfil-form-group">
                   <label className="perfil-label">Correo electrónico</label>
-                  <input type="email" className="perfil-input disabled-input" defaultValue="jane.doe@example.com" disabled />
+                  <input type="email" className="perfil-input disabled-input" value={emailUsuario} disabled />
                 </div>
               </div>
 
@@ -93,7 +106,7 @@ export default function Perfil() {
         </main>
       </div>
 
-      {/* Modal de Confirmación de Eliminación (eliminar_cuenta_user.png) */}
+      {/* Modal de Confirmación de Eliminación */}
       {showModalDelete && (
         <div className="modal-backdrop">
           <div className="modal-card">
