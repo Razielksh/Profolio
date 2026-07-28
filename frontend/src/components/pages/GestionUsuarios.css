@@ -52,20 +52,25 @@
   color: #006654;
 }
 
-.admin-profile-btn {
-  color: #374151;
+.admin-logout-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border-radius: 50%;
-  text-decoration: none;
-  transition: background-color 0.15s;
+  gap: 8px;
+  background: none;
+  border: 1.5px solid #D1D5DB;
+  color: #374151;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
 }
 
-.admin-profile-btn:hover {
-  background-color: #F3F4F6;
-  color: #006654;
+.admin-logout-btn:hover {
+  border-color: #DC2626;
+  color: #DC2626;
 }
 
 /* Main Content */

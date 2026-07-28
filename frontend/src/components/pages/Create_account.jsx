@@ -12,11 +12,57 @@ export default function Create_account() {
     const [errores, setErrores] = useState({});
     const [loading, setLoading] = useState(false);
 
+    const validarCampos = (field, value, currentPassword = password, currentEmail = email, currentNombre = nombre) => {
+        const nuevosErrores = { ...errores };
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const hasUppercase = /[A-Z]/;
+        const hasNumber = /[0-9]/;
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>\-_]/;
+
+        if (field === 'nombre') {
+            if (!value.trim()) {
+                nuevosErrores.nombre = 'El nombre es obligatorio.';
+            } else {
+                delete nuevosErrores.nombre;
+            }
+        }
+
+        if (field === 'email') {
+            if (!value.trim()) {
+                nuevosErrores.email = 'El correo es obligatorio.';
+            } else if (!emailRegex.test(value.trim())) {
+                nuevosErrores.email = 'Ingresa un correo electrónico válido.';
+            } else {
+                delete nuevosErrores.email;
+            }
+        }
+
+        if (field === 'password') {
+            if (!value.trim()) {
+                nuevosErrores.password = 'La contraseña es obligatoria.';
+            } else if (value.length < 6) {
+                nuevosErrores.password = 'La contraseña debe tener al menos 6 caracteres.';
+            } else if (!hasUppercase.test(value)) {
+                nuevosErrores.password = 'La contraseña debe contener al menos una letra mayúscula.';
+            } else if (!hasNumber.test(value)) {
+                nuevosErrores.password = 'La contraseña debe contener al menos un número.';
+            } else if (!hasSpecialChar.test(value)) {
+                nuevosErrores.password = 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...).';
+            } else {
+                delete nuevosErrores.password;
+            }
+        }
+
+        setErrores(nuevosErrores);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const nuevosErrores = {};
-
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const hasUppercase = /[A-Z]/;
+        const hasNumber = /[0-9]/;
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>\-_]/;
 
         if (!nombre.trim()) {
             nuevosErrores.nombre = 'El nombre es obligatorio.';
@@ -32,6 +78,12 @@ export default function Create_account() {
             nuevosErrores.password = 'La contraseña es obligatoria.';
         } else if (password.length < 6) {
             nuevosErrores.password = 'La contraseña debe tener al menos 6 caracteres.';
+        } else if (!hasUppercase.test(password)) {
+            nuevosErrores.password = 'La contraseña debe contener al menos una letra mayúscula.';
+        } else if (!hasNumber.test(password)) {
+            nuevosErrores.password = 'La contraseña debe contener al menos un número.';
+        } else if (!hasSpecialChar.test(password)) {
+            nuevosErrores.password = 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...).';
         }
 
         if (Object.keys(nuevosErrores).length > 0) {
@@ -45,7 +97,6 @@ export default function Create_account() {
         try {
             const usuarioActivo = await authService.register(nombre.trim(), email.trim(), password.trim());
 
-            // Redirigir directamente al dashboard con la sesión iniciada
             if (usuarioActivo.rol === 'Admin') {
                 navigate('/admin/usuarios');
             } else if (usuarioActivo.rol === 'Reclutador') {
@@ -55,7 +106,6 @@ export default function Create_account() {
             }
         } catch (err) {
             if (err.fieldErrors) {
-                // Map API field errors (e.g. name, email, password) to frontend state
                 const mappedErrors = {};
                 if (err.fieldErrors.name) mappedErrors.nombre = err.fieldErrors.name;
                 if (err.fieldErrors.email) mappedErrors.email = err.fieldErrors.email;
@@ -117,7 +167,10 @@ export default function Create_account() {
                                 className="form-input"
                                 placeholder="Ej. Juan Pérez"
                                 value={nombre}
-                                onChange={(e) => setNombre(e.target.value)}
+                                onChange={(e) => {
+                                    setNombre(e.target.value);
+                                    validarCampos('nombre', e.target.value);
+                                }}
                                 disabled={loading}
                             />
                             {errores.nombre && <p className="form-error">{errores.nombre}</p>}
@@ -133,7 +186,10 @@ export default function Create_account() {
                                 className="form-input"
                                 placeholder="nombre@ejemplo.com"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    validarCampos('email', e.target.value);
+                                }}
                                 disabled={loading}
                             />
                             {errores.email && <p className="form-error">{errores.email}</p>}
@@ -147,9 +203,12 @@ export default function Create_account() {
                                 id="password"
                                 type="password"
                                 className="form-input"
-                                placeholder="Mínimo 6 caracteres"
+                                placeholder="Mínimo 6 caracteres (Mayúscula, número, especial)"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    validarCampos('password', e.target.value);
+                                }}
                                 disabled={loading}
                             />
                             {errores.password && <p className="form-error">{errores.password}</p>}

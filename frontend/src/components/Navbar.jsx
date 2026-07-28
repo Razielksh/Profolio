@@ -2,12 +2,23 @@ import React, { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import profolioIcon from '../assets/profolio_icon.svg';
 import './Navbar.css';
-
 import { authService } from '../services/api';
 
 export default function Navbar({ currentUser, onLogout }) {
     const navigate = useNavigate();
     const [dropdownOpen, setDropdownOpen] = useState(false);
+
+    // Obtener datos del usuario activo desde props o localStorage
+    const savedUser = JSON.parse(localStorage.getItem('usuario_activo') || '{}');
+    const user = currentUser || savedUser;
+
+    const nombreMostrar = user?.nombre || user?.name || 'Usuario';
+    const emailMostrar = user?.email || 'usuario@profolio.com';
+
+    const getIniciales = (nombre) => {
+        if (!nombre) return 'US';
+        return nombre.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    };
 
     const handleLogout = () => {
         setDropdownOpen(false);
@@ -41,19 +52,26 @@ export default function Navbar({ currentUser, onLogout }) {
                 </nav>
             </div>
 
-            {/* Derecha: Perfil */}
+            {/* Derecha: Perfil del usuario activo */}
             <div className="navbar-right">
                 <div className="user-profile-wrapper">
                     <div className="user-pill" onClick={() => setDropdownOpen(!dropdownOpen)}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="8" r="4" />
-                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                        <div className="user-avatar-badge">
+                            {getIniciales(nombreMostrar)}
+                        </div>
+                        <span className="user-name">{nombreMostrar}</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '4px' }}>
+                            <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
-                        <span className="user-name">Perfil</span>
                     </div>
 
                     {dropdownOpen && (
                         <div className="dropdown-menu">
+                            <div className="dropdown-user-header" style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', marginBottom: '6px' }}>
+                                <p style={{ fontWeight: '600', color: '#1F2937', margin: 0, fontSize: '0.9rem' }}>{nombreMostrar}</p>
+                                <p style={{ color: '#6B7280', margin: 0, fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emailMostrar}</p>
+                            </div>
+
                             <Link to="/perfil" className="dropdown-item profile-btn" onClick={() => setDropdownOpen(false)}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -61,6 +79,7 @@ export default function Navbar({ currentUser, onLogout }) {
                                 </svg>
                                 Ver perfil
                             </Link>
+
                             <button className="dropdown-item logout-btn" onClick={handleLogout}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
