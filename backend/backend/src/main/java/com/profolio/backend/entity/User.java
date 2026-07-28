@@ -3,6 +3,7 @@ package com.profolio.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,13 +23,26 @@ public class User {
     private Long id;
 
     @Column(nullable = false, length = 100)
-    private String name;
+    private String nombre;
 
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(nullable = false, length = 255)
     private String password;
+
+    @Column(name = "foto_url", length = 255)
+    private String fotoUrl;
+
+    @Column(length = 20)
+    private String telefono;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean activo = true;
+
+    @Column(name = "fecha_registro", nullable = false, updatable = false)
+    private LocalDateTime fechaRegistro;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -38,4 +52,23 @@ public class User {
     )
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaRegistro == null) {
+            this.fechaRegistro = LocalDateTime.now();
+        }
+        if (this.activo == null) {
+            this.activo = true;
+        }
+    }
+
+    // Métodos de conveniencia para compatibilidad con código existente
+    public String getName() {
+        return nombre;
+    }
+
+    public void setName(String name) {
+        this.nombre = name;
+    }
 }

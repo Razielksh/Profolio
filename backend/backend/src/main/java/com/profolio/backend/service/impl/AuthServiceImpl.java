@@ -52,9 +52,10 @@ public class AuthServiceImpl implements AuthService {
         roles.add(userRole);
 
         User user = User.builder()
-                .name(registerRequestDto.getName())
+                .nombre(registerRequestDto.getName())
                 .email(registerRequestDto.getEmail())
                 .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+                .activo(true)
                 .roles(roles)
                 .build();
 
@@ -74,8 +75,13 @@ public class AuthServiceImpl implements AuthService {
 
         UserResponseDto userDto = UserResponseDto.builder()
                 .id(savedUser.getId())
-                .name(savedUser.getName())
+                .nombre(savedUser.getNombre())
+                .name(savedUser.getNombre())
                 .email(savedUser.getEmail())
+                .fotoUrl(savedUser.getFotoUrl())
+                .telefono(savedUser.getTelefono())
+                .activo(savedUser.getActivo())
+                .fechaRegistro(savedUser.getFechaRegistro())
                 .roles(roleNames)
                 .build();
 
@@ -100,10 +106,18 @@ public class AuthServiceImpl implements AuthService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
 
+        User user = userRepository.findByEmail(userDetails.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
         UserResponseDto userDto = UserResponseDto.builder()
-                .id(userDetails.getId())
-                .name(userDetails.getName())
-                .email(userDetails.getEmail())
+                .id(user.getId())
+                .nombre(user.getNombre())
+                .name(user.getNombre())
+                .email(user.getEmail())
+                .fotoUrl(user.getFotoUrl())
+                .telefono(user.getTelefono())
+                .activo(user.getActivo())
+                .fechaRegistro(user.getFechaRegistro())
                 .roles(roles)
                 .build();
 
