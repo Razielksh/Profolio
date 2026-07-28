@@ -76,9 +76,9 @@ export default function Login() {
                 <label htmlFor="password" className="form-label">
                   Contraseña
                 </label>
-                <a href="#forgot" className="forgot-password-link">
+                <Link to="/forgot" className="forgot-password-link">
                   ¿Has olvidado tu contraseña?
-                </a>
+                </Link>
               </div>
               <input
                 id="password"

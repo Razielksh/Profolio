@@ -1,0 +1,309 @@
+.view-cv-page {
+  min-height: 100vh;
+  background-color: #AEE2DC;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Navbar */
+.view-cv-navbar {
+  height: 60px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+
+.view-cv-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.view-cv-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-contactar {
+  background: transparent;
+  border: none;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.btn-contactar:hover {
+  color: #006654;
+}
+
+/* Paper Document */
+.view-cv-body {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.cv-paper-document {
+  background-color: #ffffff;
+  width: 760px;
+  min-height: 940px;
+  border-radius: 8px;
+  padding: 56px 64px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  color: #1F2937;
+}
+
+.cv-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cv-name {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.cv-role {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #006654;
+  margin: 0;
+}
+
+.cv-contact-col {
+  text-align: right;
+  font-size: 0.85rem;
+  color: #4B5563;
+  line-height: 1.6;
+}
+
+.cv-line {
+  border: none;
+  border-bottom: 1px solid #E5E7EB;
+  margin: 20px 0 28px 0;
+}
+
+.cv-section {
+  margin-bottom: 32px;
+}
+
+.cv-sec-heading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 14px 0;
+}
+
+.cv-sec-text {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #374151;
+  margin: 0;
+}
+
+.cv-exp-item {
+  margin-bottom: 20px;
+}
+
+.cv-exp-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.cv-exp-date {
+  font-size: 0.82rem;
+  color: #6B7280;
+}
+
+.cv-exp-role {
+  font-size: 0.88rem;
+  color: #006654;
+  margin: 2px 0 8px 0;
+}
+
+.cv-exp-bullets {
+  margin: 0 0 0 20px;
+  padding: 0;
+  font-size: 0.88rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.cv-skills-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-chip {
+  background-color: #AEE2DC;
+  color: #004D40;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 16px;
+}
+
+.view-cv-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.82rem;
+  color: #4B5563;
+  background-color: #F4F8F8;
+  border-top: 1px solid #E5E7EB;
+}
+
+/* MODAL CONTACTAR */
+.contact-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.contact-modal-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 480px;
+  padding: 24px 28px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.contact-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #E5E7EB;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+}
+
+.contact-modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #9CA3AF;
+  cursor: pointer;
+}
+
+.form-group-modal {
+  margin-bottom: 20px;
+}
+
+.modal-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.modal-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.modal-textarea:focus {
+  border-color: #006654;
+}
+
+.channel-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  background-color: #ffffff;
+}
+
+.channel-selected {
+  border-color: #006654;
+  background-color: #EEF9F6;
+}
+
+.channel-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1F2937;
+}
+
+.contact-modal-footer {
+  border-top: 1px solid #E5E7EB;
+  padding-top: 16px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-disclaimer {
+  font-size: 0.78rem;
+  color: #6B7280;
+  line-height: 1.4;
+}
+
+.modal-footer-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-modal-send {
+  background-color: #006654;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-modal-send:hover {
+  background-color: #005243;
+}

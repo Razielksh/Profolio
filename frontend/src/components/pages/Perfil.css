@@ -1,0 +1,259 @@
+.perfil-page {
+  min-height: 100vh;
+  background-color: #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.perfil-body {
+  display: flex;
+  flex: 1;
+}
+
+/* Columna Izquierda */
+.perfil-sidebar {
+  width: 260px;
+  background-color: #EDF6F5;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.perfil-avatar-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: #006654;
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.perfil-sidebar-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px 0;
+}
+
+.perfil-sidebar-email {
+  font-size: 0.85rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* Columna Derecha */
+.perfil-content {
+  flex: 1;
+  padding: 40px 48px;
+  box-sizing: border-box;
+}
+
+.perfil-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 40px 48px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  max-width: 860px;
+}
+
+.perfil-section {
+  margin-bottom: 40px;
+}
+
+.perfil-section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.perfil-divider {
+  border: none;
+  border-bottom: 2px solid #111827;
+  margin-bottom: 24px;
+}
+
+.perfil-form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.perfil-form-group {
+  flex: 1;
+}
+
+.perfil-form-group.half-width {
+  flex: 0 0 calc(50% - 12px);
+}
+
+.perfil-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4B5563;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.perfil-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #1F2937;
+  box-sizing: border-box;
+  outline: none;
+  background-color: #ffffff;
+}
+
+.perfil-input:focus {
+  border-color: #006654;
+}
+
+.disabled-input {
+  background-color: #E5E7EB;
+  color: #6B7280;
+  cursor: not-allowed;
+}
+
+.perfil-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.btn-guardar-cambios {
+  background-color: #006654;
+  color: #ffffff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-guardar-cambios:hover {
+  background-color: #005243;
+}
+
+/* Zona de Peligro */
+.danger-title {
+  color: #B91C1C;
+}
+
+.danger-divider {
+  border-bottom-color: #B91C1C;
+}
+
+.danger-text {
+  font-size: 0.88rem;
+  color: #4B5563;
+  margin-bottom: 20px;
+}
+
+.btn-eliminar-cuenta {
+  background-color: transparent;
+  border: 1.5px solid #DC2626;
+  color: #DC2626;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-eliminar-cuenta:hover {
+  background-color: #FEF2F2;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 440px;
+  padding: 32px 28px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-warning-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #FEE2E2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+}
+
+.modal-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 10px 0;
+}
+
+.modal-body-text {
+  font-size: 0.88rem;
+  color: #6B7280;
+  margin: 0 0 28px 0;
+  line-height: 1.45;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-modal-cancel {
+  flex: 1;
+  padding: 11px;
+  border: 1px solid #D1D5DB;
+  background-color: #ffffff;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-modal-delete {
+  flex: 1;
+  padding: 11px;
+  border: none;
+  background-color: #DC2626;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-modal-delete:hover {
+  background-color: #B91C1C;
+}

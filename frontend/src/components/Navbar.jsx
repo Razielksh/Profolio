@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import profolioIcon from '../assets/profolio_icon.svg';
 import './Navbar.css';
 
@@ -49,7 +49,14 @@ export default function Navbar({ currentUser, onLogout }) {
 
                     {dropdownOpen && (
                         <div className="dropdown-menu">
-                            <button className="logout-btn" onClick={handleLogout}>
+                            <Link to="/perfil" className="dropdown-item profile-btn" onClick={() => setDropdownOpen(false)}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                Ver perfil
+                            </Link>
+                            <button className="dropdown-item logout-btn" onClick={handleLogout}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                                     <polyline points="16 17 21 12 16 7" />

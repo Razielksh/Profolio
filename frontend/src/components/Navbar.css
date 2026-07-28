@@ -113,11 +113,10 @@
     padding: 4px;
 }
 
-.logout-btn {
+.dropdown-item {
     width: 100%;
     background: none;
     border: none;
-    color: #c8413b;
     padding: 10px 14px;
     text-align: left;
     font-size: 0.9rem;
@@ -129,13 +128,28 @@
     border-radius: 6px;
     transition: background-color 0.2s;
     font-family: inherit;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.profile-btn {
+    color: #374151;
+}
+
+.profile-btn:hover {
+    background-color: #F3F4F6;
+    color: #006654;
+}
+
+.logout-btn {
+    color: #c8413b;
 }
 
 .logout-btn:hover {
     background-color: #fdf2f2;
 }
 
-.logout-btn svg {
+.dropdown-item svg {
     flex-shrink: 0;
 }
 
