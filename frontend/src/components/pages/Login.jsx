@@ -1,63 +1,52 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
+import { authService } from '../../services/api';
 import './Login.css';
-
-const usuariosDefecto = [
-  { nombre: 'Usuario Demo', email: 'user@ejemplo.com', password: 'password123', rol: 'Usuario' },
-  { nombre: 'Admin Demo', email: 'admin@ejemplo.com', password: 'password123', rol: 'Admin' },
-  { nombre: 'Reclutador Demo', email: 'reclutador@ejemplo.com', password: 'password123', rol: 'Reclutador' }
-];
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errores, setErrores] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const nuevosErrores = {};
 
     if (!email.trim()) nuevosErrores.email = 'El correo es obligatorio.';
     if (!password.trim()) nuevosErrores.password = 'La contraseña es obligatoria.';
 
-    // Obtener lista de usuarios almacenada o inicializar con los por defecto
-    const guardados = localStorage.getItem('usuarios_profolio');
-    let listaUsuarios = [];
-
-    if (guardados) {
-      listaUsuarios = JSON.parse(guardados);
-    } else {
-      listaUsuarios = usuariosDefecto;
-      localStorage.setItem('usuarios_profolio', JSON.stringify(usuariosDefecto));
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores);
+      return;
     }
 
-    // Buscar si el correo y la contraseña coinciden
-    const usuarioEncontrado = listaUsuarios.find(
-      (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password.trim()
-    );
+    setErrores({});
+    setLoading(true);
 
-    if (email.trim() && password.trim() && !usuarioEncontrado) {
-      nuevosErrores.general = 'Correo o contraseña incorrectos.';
-    }
+    try {
+      const usuarioActivo = await authService.login(email.trim(), password.trim());
 
-    setErrores(nuevosErrores);
-
-    if (Object.keys(nuevosErrores).length === 0 && usuarioEncontrado) {
-      // Guardar el usuario activo en localStorage
-      localStorage.setItem('usuario_activo', JSON.stringify(usuarioEncontrado));
-
-      if (onLogin) onLogin(usuarioEncontrado);
+      if (onLogin) onLogin(usuarioActivo);
 
       // Redirigir según el rol del usuario
-      if (usuarioEncontrado.rol === 'Admin') {
+      if (usuarioActivo.rol === 'Admin') {
         navigate('/admin/usuarios');
-      } else if (usuarioEncontrado.rol === 'Reclutador') {
+      } else if (usuarioActivo.rol === 'Reclutador') {
         navigate('/reclutador/directorio');
       } else {
         navigate('/dashboard');
       }
+    } catch (err) {
+      if (err.fieldErrors) {
+        setErrores(err.fieldErrors);
+      } else {
+        setErrores({ general: err.message || 'Error al iniciar sesión. Inténtalo de nuevo.' });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,6 +100,7 @@ export default function Login({ onLogin }) {
                 placeholder="nombre@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               />
               {errores.email && <p className="form-error">{errores.email}</p>}
             </div>
@@ -131,12 +121,13 @@ export default function Login({ onLogin }) {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
               />
               {errores.password && <p className="form-error">{errores.password}</p>}
             </div>
 
-            <button type="submit" className="login-submit-btn">
-              Iniciar sesión
+            <button type="submit" className="login-submit-btn" disabled={loading}>
+              {loading ? 'Cargando...' : 'Iniciar sesión'}
             </button>
           </form>
         </div>

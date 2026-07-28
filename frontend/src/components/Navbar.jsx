@@ -3,13 +3,15 @@ import { NavLink, Link, useNavigate } from 'react-router-dom';
 import profolioIcon from '../assets/profolio_icon.svg';
 import './Navbar.css';
 
+import { authService } from '../services/api';
+
 export default function Navbar({ currentUser, onLogout }) {
     const navigate = useNavigate();
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const handleLogout = () => {
         setDropdownOpen(false);
-        localStorage.removeItem('usuario_activo');
+        authService.logout();
         if (onLogout) onLogout();
         navigate('/');
     };

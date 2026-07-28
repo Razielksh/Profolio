@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
+import { authService } from '../../services/api';
 import './Login.css';
-
-const usuariosDefecto = [
-    { nombre: 'Usuario Demo', email: 'user@ejemplo.com', password: 'Password123!', rol: 'Usuario' },
-    { nombre: 'Admin Demo', email: 'admin@ejemplo.com', password: 'Password123!', rol: 'Admin' },
-    { nombre: 'Reclutador Demo', email: 'reclutador@ejemplo.com', password: 'Password123!', rol: 'Reclutador' }
-];
 
 export default function Create_account() {
     const navigate = useNavigate();
@@ -15,16 +10,13 @@ export default function Create_account() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errores, setErrores] = useState({});
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const nuevosErrores = {};
 
-        // Expresiones regulares para validar correo y contraseña
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const tieneMayuscula = /[A-Z]/;
-        const tieneNumero = /[0-9]/;
-        const tieneEspecial = /[^A-Za-z0-9]/;
 
         if (!nombre.trim()) {
             nuevosErrores.nombre = 'El nombre es obligatorio.';
@@ -38,39 +30,42 @@ export default function Create_account() {
 
         if (!password.trim()) {
             nuevosErrores.password = 'La contraseña es obligatoria.';
-        } else if (
-            password.length < 8 ||
-            !tieneMayuscula.test(password) ||
-            !tieneNumero.test(password) ||
-            !tieneEspecial.test(password)
-        ) {
-            nuevosErrores.password = 'La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.';
+        } else if (password.length < 6) {
+            nuevosErrores.password = 'La contraseña debe tener al menos 6 caracteres.';
         }
 
-        // Obtener usuarios guardados
-        const guardados = localStorage.getItem('usuarios_profolio');
-        let listaUsuarios = guardados ? JSON.parse(guardados) : [...usuariosDefecto];
-
-        // Verificar si el correo ya existe
-        if (email.trim() && listaUsuarios.some(u => u.email.toLowerCase() === email.trim().toLowerCase())) {
-            nuevosErrores.email = 'Este correo ya está registrado.';
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErrores(nuevosErrores);
+            return;
         }
 
-        setErrores(nuevosErrores);
+        setErrores({});
+        setLoading(true);
 
-        if (Object.keys(nuevosErrores).length === 0) {
-            const nuevoUsuario = {
-                nombre: nombre.trim(),
-                email: email.trim(),
-                password: password.trim(),
-                rol: 'Usuario'
-            };
+        try {
+            const usuarioActivo = await authService.register(nombre.trim(), email.trim(), password.trim());
 
-            listaUsuarios.push(nuevoUsuario);
-            localStorage.setItem('usuarios_profolio', JSON.stringify(listaUsuarios));
-
-            alert('¡Cuenta creada con éxito! Ahora puedes iniciar sesión.');
-            navigate('/');
+            // Redirigir directamente al dashboard con la sesión iniciada
+            if (usuarioActivo.rol === 'Admin') {
+                navigate('/admin/usuarios');
+            } else if (usuarioActivo.rol === 'Reclutador') {
+                navigate('/reclutador/directorio');
+            } else {
+                navigate('/dashboard');
+            }
+        } catch (err) {
+            if (err.fieldErrors) {
+                // Map API field errors (e.g. name, email, password) to frontend state
+                const mappedErrors = {};
+                if (err.fieldErrors.name) mappedErrors.nombre = err.fieldErrors.name;
+                if (err.fieldErrors.email) mappedErrors.email = err.fieldErrors.email;
+                if (err.fieldErrors.password) mappedErrors.password = err.fieldErrors.password;
+                setErrores(mappedErrors);
+            } else {
+                setErrores({ general: err.message || 'Error al registrar la cuenta. Inténtalo de nuevo.' });
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -106,6 +101,12 @@ export default function Create_account() {
                     </div>
 
                     <form className="login-form" onSubmit={handleSubmit}>
+                        {errores.general && (
+                            <div className="form-error" style={{ marginBottom: '16px', fontSize: '0.9rem', fontWeight: '600' }}>
+                                ⚠️ {errores.general}
+                            </div>
+                        )}
+
                         <div className="form-group">
                             <label htmlFor="name" className="form-label">
                                 Nombre completo
@@ -117,6 +118,7 @@ export default function Create_account() {
                                 placeholder="Ej. Juan Pérez"
                                 value={nombre}
                                 onChange={(e) => setNombre(e.target.value)}
+                                disabled={loading}
                             />
                             {errores.nombre && <p className="form-error">{errores.nombre}</p>}
                         </div>
@@ -132,6 +134,7 @@ export default function Create_account() {
                                 placeholder="nombre@ejemplo.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                disabled={loading}
                             />
                             {errores.email && <p className="form-error">{errores.email}</p>}
                         </div>
@@ -144,15 +147,16 @@ export default function Create_account() {
                                 id="password"
                                 type="password"
                                 className="form-input"
-                                placeholder="Mínimo 8 caracteres, mayúscula, número y especial"
+                                placeholder="Mínimo 6 caracteres"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                disabled={loading}
                             />
                             {errores.password && <p className="form-error">{errores.password}</p>}
                         </div>
 
-                        <button type="submit" className="login-submit-btn">
-                            Crear cuenta
+                        <button type="submit" className="login-submit-btn" disabled={loading}>
+                            {loading ? 'Registrando...' : 'Crear cuenta'}
                         </button>
                     </form>
                 </div>
