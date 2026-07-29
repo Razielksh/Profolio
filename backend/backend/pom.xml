@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
+		<version>3.4.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.profolio</groupId>
@@ -36,7 +36,7 @@
     <!-- Para crear la API REST (@RestController, @RequestMapping) -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-webmvc</artifactId>
+        <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
     <!-- JPA / Hibernate para persistencia y relaciones entre entidades -->
@@ -163,6 +163,7 @@
 								<path>
 									<groupId>org.projectlombok</groupId>
 									<artifactId>lombok</artifactId>
+									<version>1.18.36</version>
 								</path>
 							</annotationProcessorPaths>
 						</configuration>
@@ -178,6 +179,7 @@
 								<path>
 									<groupId>org.projectlombok</groupId>
 									<artifactId>lombok</artifactId>
+									<version>1.18.36</version>
 								</path>
 							</annotationProcessorPaths>
 						</configuration>

@@ -40,8 +40,8 @@ export default function Create_account() {
         if (field === 'password') {
             if (!value.trim()) {
                 nuevosErrores.password = 'La contraseña es obligatoria.';
-            } else if (value.length < 6) {
-                nuevosErrores.password = 'La contraseña debe tener al menos 6 caracteres.';
+            } else if (value.length < 8) {
+                nuevosErrores.password = 'La contraseña debe tener al menos 8 caracteres.';
             } else if (!hasUppercase.test(value)) {
                 nuevosErrores.password = 'La contraseña debe contener al menos una letra mayúscula.';
             } else if (!hasNumber.test(value)) {

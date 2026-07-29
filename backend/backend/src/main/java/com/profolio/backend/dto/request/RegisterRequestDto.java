@@ -22,6 +22,9 @@ public class RegisterRequestDto {
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, max = 40, message = "La contraseña debe tener al menos 6 caracteres")
+    @jakarta.validation.constraints.Pattern(
+            regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_#\\-\\+\\=\\.\\,\\;])[A-Za-z\\d@$!%*?&_#\\-\\+\\=\\.\\,\\;]{8,}$",
+            message = "La contraseña debe tener al menos 8 caracteres, incluir una mayúscula, un número y un carácter especial"
+    )
     private String password;
 }

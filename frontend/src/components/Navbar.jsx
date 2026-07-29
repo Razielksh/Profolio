@@ -12,7 +12,10 @@ export default function Navbar({ currentUser, onLogout }) {
     const savedUser = JSON.parse(localStorage.getItem('usuario_activo') || '{}');
     const user = currentUser || savedUser;
 
-    const nombreMostrar = user?.nombre || user?.name || 'Usuario';
+    const esNormal = !user?.rol || user?.rol === 'Usuario' || user?.rol === 'Reclutador';
+    const nombreMostrar = esNormal
+        ? (user?.nombre || user?.name || 'Usuario')
+        : 'Admin';
     const emailMostrar = user?.email || 'usuario@profolio.com';
 
     const getIniciales = (nombre) => {

@@ -21,7 +21,7 @@ export const authService = {
 
         const usuarioFormateado = {
             id: data.user.id,
-            nombre: data.user.name,
+            nombre: data.user.nombre || data.user.name || 'Usuario',
             email: data.user.email,
             rol: data.user.roles?.includes('ROLE_ADMIN')
                 ? 'Admin'
@@ -57,7 +57,7 @@ export const authService = {
 
         const usuarioFormateado = {
             id: data.user.id,
-            nombre: data.user.name,
+            nombre: data.user.nombre || data.user.name || name || 'Usuario',
             email: data.user.email,
             rol: data.user.roles?.includes('ROLE_ADMIN')
                 ? 'Admin'
