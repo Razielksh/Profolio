@@ -19,4 +19,13 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false, unique = true)
     private ERole name;
+
+    // Alias de conveniencia para acceso con nombre 'nombre' conforme al diagrama
+    public ERole getNombre() {
+        return name;
+    }
+
+    public void setNombre(ERole nombre) {
+        this.name = nombre;
+    }
 }

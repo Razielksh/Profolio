@@ -22,8 +22,13 @@ public class Cv {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "template_id")
-    private Long templateId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "template_id")
+    private Template template;
+
+    public Long getTemplateId() {
+        return template != null ? template.getId() : null;
+    }
 
     @Column(nullable = false, length = 150)
     private String titulo;
