@@ -2,7 +2,6 @@ package com.profolio.backend.dto.response;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.Set;
 
 @Getter
@@ -18,6 +17,5 @@ public class UserResponseDto {
     private String fotoUrl;
     private String telefono;
     private Boolean activo;
-    private LocalDateTime fechaRegistro;
     private Set<String> roles;
 }

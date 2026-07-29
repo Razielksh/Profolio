@@ -81,7 +81,6 @@ public class AuthServiceImpl implements AuthService {
                 .fotoUrl(savedUser.getFotoUrl())
                 .telefono(savedUser.getTelefono())
                 .activo(savedUser.getActivo())
-                .fechaRegistro(savedUser.getFechaRegistro())
                 .roles(roleNames)
                 .build();
 
@@ -117,7 +116,6 @@ public class AuthServiceImpl implements AuthService {
                 .fotoUrl(user.getFotoUrl())
                 .telefono(user.getTelefono())
                 .activo(user.getActivo())
-                .fechaRegistro(user.getFechaRegistro())
                 .roles(roles)
                 .build();
 

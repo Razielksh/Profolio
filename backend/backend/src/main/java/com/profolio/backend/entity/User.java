@@ -3,7 +3,6 @@ package com.profolio.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,7 +21,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
     @Column(nullable = false, unique = true, length = 100)
@@ -31,18 +30,15 @@ public class User {
     @Column(nullable = false, length = 255)
     private String password;
 
-    @Column(name = "foto_url", length = 255)
+    @Column(name = "foto_url", nullable = true, length = 255)
     private String fotoUrl;
 
-    @Column(length = 20)
+    @Column(name = "telefono", nullable = true, length = 20)
     private String telefono;
 
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;
-
-    @Column(name = "fecha_registro", nullable = false, updatable = false)
-    private LocalDateTime fechaRegistro;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -55,9 +51,6 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        if (this.fechaRegistro == null) {
-            this.fechaRegistro = LocalDateTime.now();
-        }
         if (this.activo == null) {
             this.activo = true;
         }
