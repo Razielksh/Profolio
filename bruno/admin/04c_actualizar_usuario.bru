@@ -1,0 +1,29 @@
+meta {
+  name: 04c - Actualizar Usuario
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/admin/users/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  {
+    "nombre": "Nombre Actualizado",
+    "email": "admin@profolio.com",
+    "rol": "Admin"
+  }
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+}

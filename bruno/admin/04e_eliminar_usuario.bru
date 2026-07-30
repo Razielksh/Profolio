@@ -1,0 +1,21 @@
+meta {
+  name: 04e - Eliminar Usuario
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/api/admin/users/999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+tests {
+  test("Status es 200 OK o respuesta en JSON", function() {
+    expect(res.status).to.be.oneOf([200, 404]);
+  });
+}

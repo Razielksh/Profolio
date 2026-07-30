@@ -1,0 +1,26 @@
+meta {
+  name: 12 - Enviar Email de Prueba
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/test/email
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "to": "destinatario@example.com",
+    "subject": "Prueba desde Bruno",
+    "message": "Hola, este es un mensaje enviado de prueba con Bruno API Client.",
+    "isHtml": true
+  }
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+}

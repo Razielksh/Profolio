@@ -1,0 +1,17 @@
+meta {
+  name: 10 - Listar CVs Públicos
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/cv/publicos
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+}

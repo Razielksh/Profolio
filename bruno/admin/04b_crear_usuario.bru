@@ -1,0 +1,35 @@
+meta {
+  name: 04b - Crear Usuario Admin
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/admin/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  {
+    "nombre": "Usuario Prueba Admin",
+    "email": "nuevo.usuario@example.com",
+    "password": "Password123!",
+    "rol": "Usuario"
+  }
+}
+
+tests {
+  test("Status es 201 Created", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Usuario creado correctamente", function() {
+    expect(res.body.id).to.be.a("number");
+    expect(res.body.email).to.equal("nuevo.usuario@example.com");
+  });
+}

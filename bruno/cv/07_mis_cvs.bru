@@ -1,0 +1,25 @@
+meta {
+  name: 07 - Mis CVs Guardados
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/cv/my-cvs
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Respuesta es un listado", function() {
+    expect(res.body).to.be.an("array");
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: 08 - Obtener Mi CV por ID
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/cv/{{cvId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+}

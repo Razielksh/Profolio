@@ -1,0 +1,73 @@
+meta {
+  name: 06 - Guardar o Actualizar CV
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/cv/save
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  {
+    "id": null,
+    "titulo": "Mi CV Principal",
+    "privacidad": "PUBLICO",
+    "colorPrimario": "#006654",
+    "nombreContacto": "Juan Pérez",
+    "tituloProfesional": "Desarrollador Full Stack",
+    "linkedinUrl": "https://linkedin.com/in/juanperez",
+    "resumen": "Desarrollador apasionado por tecnologías web y Java Spring Boot.",
+    "experiencias": [
+      {
+        "puesto": "Desarrollador Java",
+        "empresa": "Tech Solutions",
+        "fecha": "2022 - Presente",
+        "descripcion": "Desarrollo de microservicios e integración con frontend en React.",
+        "orden": 1
+      }
+    ],
+    "educacion": [
+      {
+        "titulo": "Ingeniería en Computación",
+        "colegio": "Universidad Nacional",
+        "fecha": "2018 - 2022",
+        "orden": 1
+      }
+    ],
+    "habilidades": [
+      {
+        "nombre": "Java",
+        "nivel": "Avanzado",
+        "orden": 1
+      },
+      {
+        "nombre": "Spring Boot",
+        "nivel": "Avanzado",
+        "orden": 2
+      }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.id) {
+    bru.setVar("cvId", res.body.id);
+  }
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Retorna el ID del CV guardado", function() {
+    expect(res.body.id).to.be.a("number");
+  });
+}

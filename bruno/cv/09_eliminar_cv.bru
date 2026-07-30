@@ -1,0 +1,21 @@
+meta {
+  name: 09 - Eliminar CV por ID
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/api/cv/{{cvId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+}
