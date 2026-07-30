@@ -101,8 +101,13 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .cv-title-input {
@@ -175,6 +180,7 @@
     transform: translateY(-10px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -281,7 +287,8 @@
   margin-bottom: 4px;
 }
 
-.form-input-sm, .form-textarea-sm {
+.form-input-sm,
+.form-textarea-sm {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid #D1D5DB;
@@ -298,7 +305,8 @@
   min-height: 60px;
 }
 
-.form-input-sm:focus, .form-textarea-sm:focus {
+.form-input-sm:focus,
+.form-textarea-sm:focus {
   border-color: #006654;
 }
 
@@ -421,6 +429,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
   color: #1F2937;
+
+  overflow: hidden
 }
 
 .cv-doc-header {
@@ -468,6 +478,10 @@
   color: #374151;
   margin: 0;
   white-space: pre-line;
+
+  overflow-wrap: break-word;
+  word-break: break-word;
+
 }
 
 .cv-job-item {
@@ -525,22 +539,27 @@
   body {
     background-color: #ffffff !important;
   }
+
   .editor-navbar,
   .editor-sidebar {
     display: none !important;
   }
+
   .editor-page {
     height: auto !important;
     overflow: visible !important;
     background-color: #ffffff !important;
   }
+
   .editor-body {
     overflow: visible !important;
   }
+
   .editor-preview-area {
     padding: 0 !important;
     overflow: visible !important;
   }
+
   .cv-document-paper {
     width: 100% !important;
     box-shadow: none !important;

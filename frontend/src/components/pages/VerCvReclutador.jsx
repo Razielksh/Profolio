@@ -1,14 +1,73 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
 import './VerCvReclutador.css';
 
 export default function VerCvReclutador() {
+  const [searchParams] = useSearchParams();
+  const cvId = searchParams.get('cvId');
+
+  const [cvData, setCvData] = useState(null);
   const [showModalContact, setShowModalContact] = useState(false);
   const [channelEmail, setChannelEmail] = useState(true);
   const [channelSms, setChannelSms] = useState(false);
   const [channelWhatsapp, setChannelWhatsapp] = useState(false);
   const [sentNotification, setSentNotification] = useState(false);
+
+  useEffect(() => {
+    if (cvId) {
+      const listaCvs = JSON.parse(localStorage.getItem('profolio_cvs_lista') || '[]');
+      const encontrado = listaCvs.find(c => c.id === cvId);
+      if (encontrado) {
+        setCvData(encontrado);
+      }
+    }
+  }, [cvId]);
+
+  // Datos por defecto (si es demo o no se encuentra el CV específico)
+  const personal = cvData?.personal || {
+    nombre: 'Alex',
+    apellido: 'Morgan',
+    titulo: 'Senior Frontend Developer',
+    email: 'alex.morgan@example.com',
+    telefono: '+1 (555) 019-2834',
+    ubicacion: 'San Francisco, CA',
+    resumen: 'Desarrollador de software apasionado con más de 6 años de experiencia en la creación de aplicaciones web escalables y eficientes con arquitecturas modernas.'
+  };
+
+  const experiencias = cvData?.experiencias || [
+    {
+      id: 1,
+      empresa: 'TechNova Solutions',
+      puesto: 'Lead Frontend Engineer',
+      fecha: 'Oct 2020 – Actualidad',
+      descripcion: 'Lideré el equipo de desarrollo frontend, optimizando el rendimiento de la aplicación en un 40% e implementando CI/CD.'
+    },
+    {
+      id: 2,
+      empresa: 'Creative Digital Agency',
+      puesto: 'Frontend Developer',
+      fecha: 'Jun 2017 – Sep 2020',
+      descripcion: 'Desarrollo de interfaces dinámicas y aplicaciones web responsivas utilizando React y CSS modular.'
+    }
+  ];
+
+  const habilidades = cvData?.habilidades || ['React', 'TypeScript', 'Next.js', 'Tailwind CSS', 'GraphQL', 'CI/CD'];
+  const educacion = cvData?.educacion || [
+    {
+      id: 1,
+      titulo: 'Licenciatura en Ciencias de la Computación',
+      colegio: 'Universidad de California',
+      fecha: '2013 - 2017'
+    }
+  ];
+
+  const handleEnviarContacto = (e) => {
+    e.preventDefault();
+    setShowModalContact(false);
+    setSentNotification(true);
+    setTimeout(() => setSentNotification(false), 4000);
+  };
 
   return (
     <div className="view-cv-page">
@@ -32,7 +91,7 @@ export default function VerCvReclutador() {
           <button className="btn-contactar" onClick={() => setShowModalContact(true)}>
             Contactar Candidato
           </button>
-          <button className="btn-descargar-pdf">
+          <button className="btn-descargar-pdf" onClick={() => window.print()}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
@@ -48,7 +107,7 @@ export default function VerCvReclutador() {
           position: 'fixed',
           top: '80px',
           right: '24px',
-          backgroundColor: '#10B981',
+          backgroundColor: '#006654',
           color: '#FFFFFF',
           padding: '12px 20px',
           borderRadius: '8px',
@@ -60,180 +119,177 @@ export default function VerCvReclutador() {
           alignItems: 'center',
           gap: '8px'
         }}>
-          ✓ Mensaje enviado exitosamente a Alex Morgan
+          ✓ Mensaje enviado exitosamente a {personal.nombre} {personal.apellido}
         </div>
       )}
 
-      {/* Contenido Hoja de CV de Alex Morgan */}
+      {/* Contenido Hoja de CV */}
       <main className="view-cv-body">
         <div className="cv-paper-document">
-          {/* Header de Alex Morgan */}
+          {/* Header del Candidato */}
           <div className="cv-header-row">
             <div>
-              <h1 className="cv-name">Alex Morgan</h1>
-              <h2 className="cv-role">Senior Frontend Developer</h2>
+              <h1 className="cv-name">{personal.nombre} {personal.apellido}</h1>
+              <h2 className="cv-role">{personal.titulo || 'Profesional'}</h2>
             </div>
             <div className="cv-contact-col">
-              <div>📍 San Francisco, CA</div>
-              <div>✉ alex.morgan@example.com</div>
-              <div>🌐 portfolio.dev</div>
+              {personal.ubicacion && <div>📍 {personal.ubicacion}</div>}
+              {personal.email && <div>✉ {personal.email}</div>}
+              {personal.telefono && <div>📞 {personal.telefono}</div>}
+              {personal.linkedin && <div>🔗 {personal.linkedin}</div>}
             </div>
           </div>
 
           <hr className="cv-line" />
 
           {/* Resumen Profesional */}
-          <section className="cv-section">
-            <h3 className="cv-sec-heading">Resumen Profesional</h3>
-            <p className="cv-sec-text">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-            </p>
-          </section>
+          {personal.resumen && (
+            <section className="cv-section">
+              <h3 className="cv-sec-heading">Resumen Profesional</h3>
+              <p className="cv-sec-text">{personal.resumen}</p>
+            </section>
+          )}
 
           {/* Experiencia */}
-          <section className="cv-section">
-            <h3 className="cv-sec-heading">Experiencia</h3>
-
-            <div className="cv-exp-item">
-              <div className="cv-exp-top">
-                <strong>TechNova Solutions</strong>
-                <span className="cv-exp-date">Oct 2020 – Actualidad</span>
-              </div>
-              <div className="cv-exp-role">Lead Frontend Engineer</div>
-              <ul className="cv-exp-bullets">
-                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</li>
-                <li>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</li>
-                <li>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</li>
-              </ul>
-            </div>
-
-            <div className="cv-exp-item">
-              <div className="cv-exp-top">
-                <strong>Creative Digital Agency</strong>
-                <span className="cv-exp-date">Jun 2017 – Sep 2020</span>
-              </div>
-              <div className="cv-exp-role">Frontend Developer</div>
-              <ul className="cv-exp-bullets">
-                <li>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</li>
-                <li>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui.</li>
-                <li>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam.</li>
-              </ul>
-            </div>
-          </section>
+          {experiencias.length > 0 && (
+            <section className="cv-section">
+              <h3 className="cv-sec-heading">Experiencia</h3>
+              {experiencias.map((exp, idx) => (
+                <div key={exp.id || idx} className="cv-exp-item">
+                  <div className="cv-exp-top">
+                    <strong>{exp.empresa}</strong>
+                    <span className="cv-exp-date">{exp.fecha}</span>
+                  </div>
+                  <div className="cv-exp-role">{exp.puesto} {exp.ubicacion ? `• ${exp.ubicacion}` : ''}</div>
+                  <p className="cv-sec-text" style={{ marginTop: '4px' }}>{exp.descripcion}</p>
+                </div>
+              ))}
+            </section>
+          )}
 
           {/* Habilidades */}
-          <section className="cv-section">
-            <h3 className="cv-sec-heading">Habilidades</h3>
-            <div className="cv-skills-pills">
-              <span className="skill-chip">React</span>
-              <span className="skill-chip">TypeScript</span>
-              <span className="skill-chip">Next.js</span>
-              <span className="skill-chip">Tailwind CSS</span>
-              <span className="skill-chip">GraphQL</span>
-              <span className="skill-chip">Jest</span>
-              <span className="skill-chip">CI/CD</span>
-            </div>
-          </section>
+          {habilidades.length > 0 && (
+            <section className="cv-section">
+              <h3 className="cv-sec-heading">Habilidades</h3>
+              <div className="cv-skills-pills">
+                {habilidades.map((hab, idx) => (
+                  <span key={idx} className="skill-chip">{hab}</span>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Educación */}
-          <section className="cv-section">
-            <h3 className="cv-sec-heading">Educación</h3>
-            <div className="cv-exp-top">
-              <strong>University of California, Berkeley</strong>
-              <span className="cv-exp-date">2013 – 2017</span>
-            </div>
-            <div className="cv-exp-role">B.S. Computer Science</div>
-          </section>
+          {educacion.length > 0 && (
+            <section className="cv-section">
+              <h3 className="cv-sec-heading">Educación</h3>
+              {educacion.map((edu, idx) => (
+                <div key={edu.id || idx} className="cv-exp-item">
+                  <div className="cv-exp-top">
+                    <strong>{edu.titulo}</strong>
+                    <span className="cv-exp-date">{edu.fecha}</span>
+                  </div>
+                  <div className="cv-exp-role">{edu.colegio}</div>
+                </div>
+              ))}
+            </section>
+          )}
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="view-cv-footer">
-        © 2024 CVGenerador. Todos los derechos reservados. &nbsp;&nbsp; Términos de Servicio &nbsp;&nbsp; Política de Privacidad
-      </footer>
-
-      {/* MODAL CONTACTAR (contactar_user_reclutador.png) */}
+      {/* Modal Contactar Candidato */}
       {showModalContact && (
-        <div className="contact-modal-backdrop">
-          <div className="contact-modal-card">
+        <div className="contact-modal-backdrop" onClick={() => setShowModalContact(false)}>
+          <div className="contact-modal-card" onClick={e => e.stopPropagation()}>
+
+            {/* Header del Modal */}
             <div className="contact-modal-header">
-              <h2 className="contact-modal-title">Contactar a Alex Morgan</h2>
+              <h3 className="contact-modal-title">Contactar a {personal.nombre} {personal.apellido}</h3>
               <button className="close-btn" onClick={() => setShowModalContact(false)}>✕</button>
             </div>
 
-            <div className="contact-modal-body">
+            <form onSubmit={handleEnviarContacto}>
+              {/* Textarea del mensaje */}
               <div className="form-group-modal">
                 <label className="modal-label">Mensaje</label>
                 <textarea
                   className="modal-textarea"
                   rows="4"
                   placeholder="Escribe un mensaje profesional..."
+                  defaultValue={`Hola ${personal.nombre}, hemos revisado tu perfil en Profolio y estamos interesados en agendar una entrevista con nuestro equipo.`}
                 ></textarea>
               </div>
 
+              {/* Canales de contacto */}
               <div className="form-group-modal">
                 <label className="modal-label">Canales de contacto</label>
 
-                {/* Email Option */}
-                <div
-                  className={`channel-option ${channelEmail ? 'channel-selected' : ''}`}
-                  onClick={() => setChannelEmail(!channelEmail)}
-                >
+                <label className={`channel-option ${channelEmail ? 'channel-selected' : ''}`} onClick={() => setChannelEmail(!channelEmail)}>
                   <div className="channel-info">
-                    <span className="channel-icon">✉</span>
-                    <span>Correo electrónico</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={channelEmail ? '#006654' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                      <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    Correo electrónico
                   </div>
-                  <input type="checkbox" checked={channelEmail} readOnly />
-                </div>
+                  <input
+                    type="checkbox"
+                    checked={channelEmail}
+                    onChange={() => {}}
+                    style={{ accentColor: '#006654', width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                </label>
 
-                {/* SMS Option */}
-                <div
-                  className={`channel-option ${channelSms ? 'channel-selected' : ''}`}
-                  onClick={() => setChannelSms(!channelSms)}
-                >
+                <label className={`channel-option ${channelSms ? 'channel-selected' : ''}`} onClick={() => setChannelSms(!channelSms)}>
                   <div className="channel-info">
-                    <span className="channel-icon">💬</span>
-                    <span>SMS</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={channelSms ? '#006654' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    SMS
                   </div>
-                  <input type="checkbox" checked={channelSms} readOnly />
-                </div>
+                  <input
+                    type="checkbox"
+                    checked={channelSms}
+                    onChange={() => {}}
+                    style={{ accentColor: '#006654', width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                </label>
 
-                {/* WhatsApp Option */}
-                <div
-                  className={`channel-option ${channelWhatsapp ? 'channel-selected' : ''}`}
-                  onClick={() => setChannelWhatsapp(!channelWhatsapp)}
-                >
+                <label className={`channel-option ${channelWhatsapp ? 'channel-selected' : ''}`} onClick={() => setChannelWhatsapp(!channelWhatsapp)}>
                   <div className="channel-info">
-                    <span className="channel-icon">💬</span>
-                    <span>WhatsApp</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={channelWhatsapp ? '#006654' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    </svg>
+                    WhatsApp
                   </div>
-                  <input type="checkbox" checked={channelWhatsapp} readOnly />
+                  <input
+                    type="checkbox"
+                    checked={channelWhatsapp}
+                    onChange={() => {}}
+                    style={{ accentColor: '#006654', width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                </label>
+              </div>
+
+              {/* Footer del Modal */}
+              <div className="contact-modal-footer">
+                <p className="modal-disclaimer">
+                  El candidato recibirá tu mensaje a través de los canales seleccionados.
+                </p>
+                <div className="modal-footer-btns">
+                  <button type="button" className="close-btn" style={{ padding: '9px 18px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '0.88rem', fontWeight: '600', color: '#374151', cursor: 'pointer' }} onClick={() => setShowModalContact(false)}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="btn-modal-send">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="22" y1="2" x2="11" y2="13"></line>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Enviar mensaje
+                  </button>
                 </div>
               </div>
-            </div>
-
-            <div className="contact-modal-footer">
-              <span className="modal-disclaimer">
-                El candidato recibirá tu mensaje a través de los canales seleccionados.
-              </span>
-
-              <div className="modal-footer-btns">
-                <button type="button" className="btn-modal-cancel" onClick={() => setShowModalContact(false)}>
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="btn-modal-send"
-                  onClick={() => {
-                    setSentNotification(true);
-                    setShowModalContact(false);
-                    setTimeout(() => setSentNotification(false), 4000);
-                  }}
-                >
-                  ▷ Enviar mensaje
-                </button>
-              </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
