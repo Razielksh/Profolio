@@ -196,6 +196,10 @@ public class CvServiceImpl implements CvService {
                         .build())
                 .collect(Collectors.toList());
 
+        User user = cv.getUser();
+        String userEmail = user != null ? user.getEmail() : null;
+        String userTelefono = user != null ? user.getTelefono() : null;
+
         return CvResponseDto.builder()
                 .id(cv.getId())
                 .titulo(cv.getTitulo())
@@ -209,6 +213,9 @@ public class CvServiceImpl implements CvService {
                 .tituloProfesional(cv.getTituloProfesional())
                 .linkedinUrl(cv.getLinkedinUrl())
                 .resumen(cv.getResumen())
+                .email(userEmail)
+                .telefono(userTelefono)
+                .ubicacion("México")
                 .experiencias(exps)
                 .educacion(edus)
                 .habilidades(skills)

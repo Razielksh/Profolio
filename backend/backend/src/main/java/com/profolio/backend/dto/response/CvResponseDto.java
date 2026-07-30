@@ -24,6 +24,9 @@ public class CvResponseDto {
     private String tituloProfesional;
     private String linkedinUrl;
     private String resumen;
+    private String email;
+    private String telefono;
+    private String ubicacion;
 
     private List<ExperienciaDto> experiencias;
     private List<EducacionDto>   educacion;
