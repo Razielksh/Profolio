@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
+import { cvService } from '../../services/api';
 import './Directorio.css';
 
 // Candidatos de ejemplo por defecto
@@ -48,40 +49,45 @@ export default function Directorio() {
   const [paginaActual, setPaginaActual] = useState(1);
   const itemsPorPagina = 6;
 
-  // Cargar CVs reales creados por usuarios y guardados del reclutador
+  // Cargar CVs reales creados por usuarios desde la BD y combinarlos/mostrarlos
   useEffect(() => {
-    // 1. Cargar CVs del usuario desde localStorage ('profolio_cvs_lista')
-    const cvsGuardados = JSON.parse(localStorage.getItem('profolio_cvs_lista') || '[]');
-    
-    // Convertir los CVs guardados por usuarios al formato de candidatos del directorio
-    const cvsTransformados = cvsGuardados.map(cv => {
-      const nombreCompleto = `${cv.personal?.nombre || ''} ${cv.personal?.apellido || ''}`.trim() || cv.titulo || 'Candidato Sin Nombre';
-      const cargo = cv.personal?.titulo || cv.titulo || 'Profesional';
-      
-      // Obtener iniciales sencillas
-      const partes = nombreCompleto.split(' ').filter(Boolean);
-      let iniciales = 'US';
-      if (partes.length >= 2) {
-        iniciales = (partes[0][0] + partes[1][0]).toUpperCase();
-      } else if (partes.length === 1) {
-        iniciales = partes[0].slice(0, 2).toUpperCase();
-      }
+    cvService.getPublicCvs()
+      .then(dbCvs => {
+        const cvsTransformados = (dbCvs || []).map(cv => {
+          const nombreCompleto = cv.nombreContacto || cv.titulo || 'Candidato Profolio';
+          const cargo = cv.tituloProfesional || cv.titulo || 'Profesional';
+          
+          const partes = nombreCompleto.split(' ').filter(Boolean);
+          let iniciales = 'US';
+          if (partes.length >= 2) {
+            iniciales = (partes[0][0] + partes[1][0]).toUpperCase();
+          } else if (partes.length === 1) {
+            iniciales = partes[0].slice(0, 2).toUpperCase();
+          }
 
-      return {
-        id: cv.id,
-        nombre: nombreCompleto,
-        cargo: cargo,
-        iniciales: iniciales,
-        tags: cv.habilidades || [],
-        ubicacion: cv.personal?.ubicacion || ''
-      };
-    });
+          const tags = (cv.habilidades || []).map(h => typeof h === 'string' ? h : h.nombre);
 
-    // Unir los CVs del usuario con los de demo (evitando duplicados por ID)
-    const idsExistentes = new Set(cvsTransformados.map(c => c.id));
-    const listaCompleta = [...cvsTransformados, ...candidatosDemo.filter(d => !idsExistentes.has(d.id))];
+          return {
+            id: cv.id,
+            nombre: nombreCompleto,
+            cargo: cargo,
+            iniciales: iniciales,
+            tags: tags,
+            ubicacion: 'México',
+            isReal: true
+          };
+        });
 
-    setCandidatos(listaCompleta);
+        // Combinar los CVs de la base de datos con los candidatos de demostración
+        const idsExistentes = new Set(cvsTransformados.map(c => c.id));
+        const listaCompleta = [...cvsTransformados, ...candidatosDemo.filter(d => !idsExistentes.has(d.id))];
+
+        setCandidatos(listaCompleta);
+      })
+      .catch(err => {
+        console.error('Error cargando CVs públicos en directorio:', err);
+        setCandidatos(candidatosDemo);
+      });
 
     // 2. Cargar IDs de CVs guardados por el reclutador
     const idsGuardados = JSON.parse(localStorage.getItem('profolio_cvs_guardados_reclutador') || '["demo_2"]');

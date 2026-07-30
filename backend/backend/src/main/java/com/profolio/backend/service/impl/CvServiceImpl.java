@@ -138,6 +138,23 @@ public class CvServiceImpl implements CvService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<CvResponseDto> findPublicCvs() {
+        return cvRepository.findByPrivacidad(EPrivacidad.PUBLICO).stream()
+                .map(this::buildResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CvResponseDto findPublicCvById(Long cvId) {
+        Cv cv = cvRepository.findById(cvId)
+                .filter(c -> c.getPrivacidad() == EPrivacidad.PUBLICO)
+                .orElseThrow(() -> new ResourceNotFoundException("CV público no encontrado: " + cvId));
+        return buildResponse(cv);
+    }
+
+    @Override
     @Transactional
     public void delete(Long cvId, Long userId) {
         Cv cv = cvRepository.findByIdAndUserId(cvId, userId)

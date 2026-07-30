@@ -1,18 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
+import { cvService } from '../../services/api';
 import './Dashboard.css';
 
-const KEY_ALL_CVS = 'profolio_cvs_lista';
-
-function getAllCvs() {
-  return JSON.parse(localStorage.getItem(KEY_ALL_CVS) || '[]');
-}
-
-function deleteCvById(id) {
-  const lista = getAllCvs().filter(c => c.id !== id);
-  localStorage.setItem(KEY_ALL_CVS, JSON.stringify(lista));
-}
+// Se conectará directamente al backend vía cvService
 
 // Miniatura del CV para la tarjeta
 function CvMiniatura({ cv }) {
@@ -56,32 +48,50 @@ export default function Dashboard() {
     : 'Admin';
 
   const [cvs, setCvs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [ordenDesc, setOrdenDesc] = useState(true);
   const [confirmarEliminar, setConfirmarEliminar] = useState(null); // id del CV a eliminar
 
+  const cargarCvs = () => {
+    setLoading(true);
+    cvService.getMyCvs()
+      .then(data => {
+        setCvs(data || []);
+        setError(null);
+      })
+      .catch(err => {
+        console.error('Error al obtener CVs:', err);
+        setError(err.message || 'Error al cargar tus CVs');
+      })
+      .finally(() => setLoading(false));
+  };
+
   useEffect(() => {
-    setCvs(getAllCvs());
+    cargarCvs();
   }, []);
 
   const cvsFiltrados = cvs
     .filter(cv => {
       const q = busqueda.toLowerCase();
-      const nombre = `${cv.personal?.nombre || ''} ${cv.personal?.apellido || ''}`.toLowerCase();
+      const nombre = (cv.nombreContacto || '').toLowerCase();
       const titulo = (cv.titulo || '').toLowerCase();
-      return nombre.includes(q) || titulo.includes(q);
+      const prof = (cv.tituloProfesional || '').toLowerCase();
+      return nombre.includes(q) || titulo.includes(q) || prof.includes(q);
     })
     .sort((a, b) => {
-      // ordenar por ID (timestamp) descendente/ascendente
-      const idA = parseInt(a.id?.replace('cv_', '') || '0');
-      const idB = parseInt(b.id?.replace('cv_', '') || '0');
-      return ordenDesc ? idB - idA : idA - idB;
+      return ordenDesc ? b.id - a.id : a.id - b.id;
     });
 
-  const handleEliminar = (id) => {
-    deleteCvById(id);
-    setCvs(getAllCvs());
-    setConfirmarEliminar(null);
+  const handleEliminar = async (id) => {
+    try {
+      await cvService.deleteCv(id);
+      setConfirmarEliminar(null);
+      cargarCvs();
+    } catch (err) {
+      alert(err.message || 'Error al eliminar el CV');
+    }
   };
 
   const handleEditar = (id) => {

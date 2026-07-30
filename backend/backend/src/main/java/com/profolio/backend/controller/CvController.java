@@ -48,6 +48,18 @@ public class CvController {
         return ResponseEntity.ok(cvService.findAllByUser(userId));
     }
 
+    // ── Listar todos los CVs públicos (para Reclutador / Directorio) ────────
+    @GetMapping("/publicos")
+    public ResponseEntity<List<CvResponseDto>> getPublicCvs() {
+        return ResponseEntity.ok(cvService.findPublicCvs());
+    }
+
+    // ── Obtener un CV público por ID ─────────────────────────────────────────
+    @GetMapping("/publico/{id}")
+    public ResponseEntity<CvResponseDto> getPublicCv(@PathVariable Long id) {
+        return ResponseEntity.ok(cvService.findPublicCvById(id));
+    }
+
     // ── Obtener un CV específico del usuario ─────────────────────────────────
     @GetMapping("/{id}")
     public ResponseEntity<CvResponseDto> getCv(

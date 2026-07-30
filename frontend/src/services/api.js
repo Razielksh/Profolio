@@ -184,6 +184,24 @@ export const cvService = {
         return data; // array de CvResponseDto
     },
 
+    async getPublicCvs() {
+        const response = await fetch(`${API_BASE_URL}/cv/publicos`);
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al obtener CVs públicos');
+        }
+        return data;
+    },
+
+    async getPublicCvById(id) {
+        const response = await fetch(`${API_BASE_URL}/cv/publico/${id}`);
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al obtener CV público');
+        }
+        return data;
+    },
+
     async getCvById(id) {
         const response = await fetch(`${API_BASE_URL}/cv/${id}`, {
             headers: authService.getAuthHeader(),
