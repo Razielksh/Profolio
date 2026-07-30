@@ -31,8 +31,24 @@ public class UserController {
             @RequestParam(required = false, defaultValue = "") String search,
             @RequestParam(required = false, defaultValue = "Todos") String role) {
 
+        com.profolio.backend.entity.ERole roleEnum = null;
+        if (role != null && !role.isEmpty() && !role.equalsIgnoreCase("Todos")) {
+            try {
+                roleEnum = com.profolio.backend.entity.ERole.valueOf(role.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Si pasan un rol no soportado como "Usuario" o "Reclutador" (sin prefijo ROLE_)
+                if (role.equalsIgnoreCase("Usuario") || role.equalsIgnoreCase("ROLE_USER")) {
+                    roleEnum = com.profolio.backend.entity.ERole.ROLE_USER;
+                } else if (role.equalsIgnoreCase("Reclutador") || role.equalsIgnoreCase("ROLE_RECLUTADOR")) {
+                    roleEnum = com.profolio.backend.entity.ERole.ROLE_RECLUTADOR;
+                } else if (role.equalsIgnoreCase("Admin") || role.equalsIgnoreCase("ROLE_ADMIN")) {
+                    roleEnum = com.profolio.backend.entity.ERole.ROLE_ADMIN;
+                }
+            }
+        }
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<User> userPage = userRepository.searchUsersPaginated(search, role, pageable);
+        Page<User> userPage = userRepository.searchUsersPaginated(search, roleEnum, pageable);
 
         var content = userPage.getContent().stream().map(user -> UserResponseDto.builder()
                 .id(user.getId())

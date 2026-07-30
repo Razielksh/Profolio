@@ -17,6 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT DISTINCT u FROM User u LEFT JOIN u.roles r WHERE " +
            "(:search IS NULL OR :search = '' OR LOWER(u.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
-           "(:role IS NULL OR :role = '' OR :role = 'Todos' OR r.name = :role)")
-    Page<User> searchUsersPaginated(@Param("search") String search, @Param("role") String role, Pageable pageable);
+           "(:role IS NULL OR r.name = :role)")
+    Page<User> searchUsersPaginated(@Param("search") String search, @Param("role") com.profolio.backend.entity.ERole role, Pageable pageable);
 }
