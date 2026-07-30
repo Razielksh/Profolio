@@ -1,4 +1,4 @@
-# 💼 Profolio — Plataforma Web de Gestión y Generación de CVs
+# Profolio — Plataforma Web de Gestión y Generación de CVs
 
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
 ![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)
@@ -8,7 +8,7 @@
 
 ---
 
-## 📌 1. Descripción del Proyecto
+## 1. Descripción del Proyecto
 
 **Profolio** es una aplicación web full-stack diseñada para la **creación, edición, personalización, gestión y exportación a PDF de Currículums Vitae (CVs)** profesionalmente diseñados. 
 
@@ -19,7 +19,7 @@ El sistema soporta arquitectura multicapa con tres perfiles principales de usuar
 
 ---
 
-## 🚀 2. Tecnologías Utilizadas
+## 2. Tecnologías Utilizadas
 
 ### Backend
 * **Lenguaje & Framework**: Java 17 + Spring Boot 3.4.1
@@ -42,14 +42,14 @@ El sistema soporta arquitectura multicapa con tres perfiles principales de usuar
 
 ---
 
-## 🔗 3. Enlaces del Proyecto
+## 3. Enlaces del Proyecto
 
-* 📋 **Tablero de GitHub Projects**: [Ver Tablero del Proyecto](https://github.com/users/Razielksh/projects/1) *(Reemplazar con URL oficial)*
-* 🎨 **Prototipo de Figma**: [Ver Diseño de Figma](https://www.figma.com/file/profolio-design-spec) *(Reemplazar con URL oficial)*
+* **Tablero de GitHub Projects**: [Ver Tablero del Proyecto](https://github.com/users/Razielksh/projects/2)
+* **Prototipo de Figma**: [Ver Diseño de Figma](https://www.figma.com/proto/xPnIqrtslAQnjwEabUbHGt/CVGenerador?node-id=1-2&t=IWvM2ucSH5YxF1bu-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A2&show-proto-sidebar=1)
 
 ---
 
-## 🔑 4. Credenciales de Prueba
+## 4. Credenciales de Prueba
 
 La base de datos se inicializa automáticamente con los siguientes usuarios de evaluación mediante Flyway (`V2__datos_semilla.sql`):
 
@@ -57,12 +57,11 @@ La base de datos se inicializa automáticamente con los siguientes usuarios de e
 |---|---|---|---|
 | **Administrador (Evaluación)** | `admin@profolio.com` | `Admin123!` | Acceso total al panel de administración de usuarios. |
 | **Reclutador** | `reclutador@profolio.com` | `Reclutador123!` | Acceso a CVs públicos, guardado de candidatos y contacto. |
-| **Usuario Estándar** | `ana.garcia@ejemplo.com` | `Usuario123!` | Candidato de prueba con CV completo de Contadora Pública. |
-| **Usuario Estándar (Full Stack)** | `luis.hernandez@gmail.com` | `Usuario123!` | Candidato de prueba con CV de Desarrollador Full Stack. |
+| **Usuario Estándar** | `juan.antonio@profolio.com` | `Usuario123!` | Candidato de prueba con CV completo de Contadora Pública. |
 
 ---
 
-## 🛠️ 5. Instrucciones de Instalación y Ejecución
+## 5. Instrucciones de Instalación y Ejecución
 
 ### Requisitos Previos:
 * **Java Development Kit (JDK)**: Versión 17 o superior.
@@ -113,7 +112,7 @@ CREATE DATABASE profolio_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ---
 
-## 📊 6. Diagrama Entidad-Relación (ER)
+## 6. Diagrama Entidad-Relación (ER)
 
 El siguiente diagrama en **Mermaid** describe el modelo relacional de la base de datos de Profolio:
 
@@ -237,7 +236,7 @@ erDiagram
 
 ---
 
-## 🌐 7. API REST & Colección de Pruebas Bruno
+## 7. API REST & Colección de Pruebas Bruno
 
 * **URL Base de la API (Local)**: `http://localhost:8080`
 * **Colección Bruno**: En la carpeta de la raíz `/bruno` se encuentran todas las peticiones listas para importar en **Bruno API Client**:
