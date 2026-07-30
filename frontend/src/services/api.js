@@ -90,3 +90,71 @@ export const authService = {
         };
     }
 };
+
+export const userService = {
+    async getUsers(page = 0, size = 5, search = '', role = 'Todos') {
+        const params = new URLSearchParams({ page, size, search, role });
+        const response = await fetch(`${API_BASE_URL}/admin/users?${params.toString()}`, {
+            headers: authService.getAuthHeader(),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al obtener usuarios de la base de datos');
+        }
+        return data;
+    },
+
+    async createUser(userData) {
+        const response = await fetch(`${API_BASE_URL}/admin/users`, {
+            method: 'POST',
+            headers: authService.getAuthHeader(),
+            body: JSON.stringify(userData),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            const error = new Error(data.message || 'Error al crear usuario');
+            error.fieldErrors = data.fieldErrors || null;
+            throw error;
+        }
+        return data;
+    },
+
+    async updateUser(id, userData) {
+        const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
+            method: 'PUT',
+            headers: authService.getAuthHeader(),
+            body: JSON.stringify(userData),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            const error = new Error(data.message || 'Error al actualizar usuario');
+            error.fieldErrors = data.fieldErrors || null;
+            throw error;
+        }
+        return data;
+    },
+
+    async toggleUserStatus(id) {
+        const response = await fetch(`${API_BASE_URL}/admin/users/${id}/toggle-status`, {
+            method: 'PATCH',
+            headers: authService.getAuthHeader(),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al cambiar estado del usuario');
+        }
+        return data;
+    },
+
+    async deleteUser(id) {
+        const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
+            method: 'DELETE',
+            headers: authService.getAuthHeader(),
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Error al eliminar usuario');
+        }
+        return true;
+    }
+};

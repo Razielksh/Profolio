@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
+import { userService, authService } from '../../services/api';
 import './GestionUsuarios.css';
-
-const usuariosDefectoAdmin = [
-  { id: 1, nombre: 'Ana García', email: 'ana.garcia@ejemplo.com', password: 'password123', rol: 'Admin', activo: true, fecha: '12 Oct 2023' },
-  { id: 2, nombre: 'Carlos Mendoza', email: 'carlos.m@ejemplo.com', password: 'password123', rol: 'Usuario', activo: true, fecha: '15 Oct 2023' },
-  { id: 3, nombre: 'Lucía Torres', email: 'ltorres@ejemplo.com', password: 'password123', rol: 'Reclutador', activo: false, fecha: '20 Oct 2023' },
-  { id: 4, nombre: 'Javier Ruíz', email: 'jruiz@ejemplo.com', password: 'password123', rol: 'Usuario', activo: true, fecha: '22 Oct 2023' },
-  { id: 5, nombre: 'Elena Gómez', email: 'elena.g@ejemplo.com', password: 'password123', rol: 'Usuario', activo: true, fecha: '25 Oct 2023' },
-  { id: 6, nombre: 'Miguel Quiroga', email: 'mquiroga@ejemplo.com', password: 'password123', rol: 'Reclutador', activo: false, fecha: '28 Oct 2023' },
-  { id: 7, nombre: 'Sofía Blanco', email: 's.blanco@ejemplo.com', password: 'password123', rol: 'Admin', activo: true, fecha: '01 Nov 2023' },
-];
 
 export default function GestionUsuarios() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState('');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('Todos');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 5;
 
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -36,93 +32,126 @@ export default function GestionUsuarios() {
   const [formRol, setFormRol] = useState('Usuario');
   const [formError, setFormError] = useState('');
 
-  // Cargar usuarios al montar el componente
+  // Cargar usuarios desde el Backend
+  const cargarUsuarios = useCallback(async () => {
+    setLoading(true);
+    setApiError('');
+    try {
+      const data = await userService.getUsers(
+        currentPage - 1,
+        itemsPerPage,
+        searchTerm,
+        roleFilter
+      );
+      setUsers(data.users || []);
+      setTotalPages(data.totalPages || 1);
+      setTotalItems(data.totalItems || 0);
+    } catch (err) {
+      console.error('Error al cargar usuarios:', err);
+      setApiError(err.message || 'Error al conectar con la base de datos');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, itemsPerPage, searchTerm, roleFilter]);
+
   useEffect(() => {
     cargarUsuarios();
-  }, []);
+  }, [cargarUsuarios]);
 
-  const cargarUsuarios = () => {
-    const guardados = localStorage.getItem('usuarios_profolio');
-    let listaExistente = guardados ? JSON.parse(guardados) : [];
-
-    // Agregar los usuarios demo del admin si no están ya en la lista
-    usuariosDefectoAdmin.forEach((demo) => {
-      const yaExiste = listaExistente.some(
-        (u) => u.email.toLowerCase() === demo.email.toLowerCase()
-      );
-      if (!yaExiste) {
-        listaExistente.push(demo);
-      }
-    });
-
-    localStorage.setItem('usuarios_profolio', JSON.stringify(listaExistente));
-    setUsers(listaExistente);
+  // Manejar cambio de filtros (reiniciar a página 1)
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
 
-  const guardarListaEnStorage = (nuevaLista) => {
-    setUsers(nuevaLista);
-    localStorage.setItem('usuarios_profolio', JSON.stringify(nuevaLista));
+  const handleRoleFilterChange = (e) => {
+    setRoleFilter(e.target.value);
+    setCurrentPage(1);
   };
 
-  // Crear usuario
-  const handleSaveCreate = (e) => {
+  // Helper para extraer rol legible
+  const getRolLegible = (user) => {
+    if (user.rol) return user.rol;
+    const roles = user.roles || [];
+    if (Array.isArray(roles)) {
+      if (roles.includes('ROLE_ADMIN')) return 'Admin';
+      if (roles.includes('ROLE_RECLUTADOR')) return 'Reclutador';
+    }
+    return 'Usuario';
+  };
+
+  // Crear usuario en DB
+  const handleSaveCreate = async (e) => {
     e.preventDefault();
     if (!formName.trim() || !formEmail.trim() || !formPassword.trim()) {
       setFormError('Todos los campos son obligatorios.');
       return;
     }
 
-    const nuevo = {
-      id: Date.now(),
-      nombre: formName.trim(),
-      email: formEmail.trim(),
-      password: formPassword.trim(),
-      rol: formRol,
-      activo: true,
-      fecha: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-    };
-
-    const nuevaLista = [...users, nuevo];
-    guardarListaEnStorage(nuevaLista);
-    setShowModalCreate(false);
+    setFormError('');
+    try {
+      await userService.createUser({
+        nombre: formName.trim(),
+        email: formEmail.trim(),
+        password: formPassword.trim(),
+        rol: formRol,
+      });
+      setShowModalCreate(false);
+      cargarUsuarios();
+    } catch (err) {
+      setFormError(err.message || 'Error al guardar el usuario en la base de datos.');
+    }
   };
 
-  // Editar usuario
-  const handleSaveEdit = (e) => {
+  // Editar usuario en DB
+  const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (!formName.trim() || !formEmail.trim()) {
       setFormError('Nombre y correo son obligatorios.');
       return;
     }
 
-    const nuevaLista = users.map((u) => {
-      if (u.id === selectedUser.id || u.email === selectedUser.email) {
-        return { ...u, nombre: formName.trim(), email: formEmail.trim(), rol: formRol };
-      }
-      return u;
-    });
-
-    guardarListaEnStorage(nuevaLista);
-    setShowModalEdit(false);
+    setFormError('');
+    try {
+      await userService.updateUser(selectedUser.id, {
+        nombre: formName.trim(),
+        email: formEmail.trim(),
+        rol: formRol,
+      });
+      setShowModalEdit(false);
+      cargarUsuarios();
+    } catch (err) {
+      setFormError(err.message || 'Error al actualizar el usuario.');
+    }
   };
 
-  // Suspender/Activar usuario
-  const handleConfirmSuspend = () => {
-    const nuevaLista = users.map((u) => {
-      if (u.id === selectedUser.id || u.email === selectedUser.email) {
-        return { ...u, activo: !u.activo };
-      }
-      return u;
-    });
-    guardarListaEnStorage(nuevaLista);
-    setShowModalSuspend(false);
+  // Suspender/Activar usuario en DB
+  const handleConfirmSuspend = async () => {
+    if (!selectedUser) return;
+    try {
+      await userService.toggleUserStatus(selectedUser.id);
+      setShowModalSuspend(false);
+      cargarUsuarios();
+    } catch (err) {
+      alert(err.message || 'Error al cambiar estado del usuario.');
+    }
   };
 
-  // Eliminar usuario
-  const handleConfirmDelete = () => {
-    const nuevaLista = users.filter((u) => u.id !== selectedUser.id && u.email !== selectedUser.email);
-    guardarListaEnStorage(nuevaLista);
-    setShowModalDelete(false);
+  // Eliminar usuario en DB
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
+    try {
+      await userService.deleteUser(selectedUser.id);
+      setShowModalDelete(false);
+      // Si era el único en la página actual y no estamos en pág 1, retroceder
+      if (users.length === 1 && currentPage > 1) {
+        setCurrentPage(p => p - 1);
+      } else {
+        cargarUsuarios();
+      }
+    } catch (err) {
+      alert(err.message || 'Error al eliminar usuario.');
+    }
   };
 
   // Abrir modales
@@ -137,9 +166,9 @@ export default function GestionUsuarios() {
 
   const handleOpenEdit = (user) => {
     setSelectedUser(user);
-    setFormName(user.nombre);
-    setFormEmail(user.email);
-    setFormRol(user.rol || 'Usuario');
+    setFormName(user.nombre || user.name || '');
+    setFormEmail(user.email || '');
+    setFormRol(getRolLegible(user));
     setFormError('');
     setShowModalEdit(true);
   };
@@ -154,23 +183,12 @@ export default function GestionUsuarios() {
     setShowModalDelete(true);
   };
 
-  // Filtrado de usuarios
-  const usuariosFiltrados = users.filter((u) => {
-    const coincideNombre = u.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-    const coincideEmail = u.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const coincideRol = roleFilter === 'Todos' || u.rol === roleFilter;
-    return (coincideNombre || coincideEmail) && coincideRol;
-  });
-
-  // Paginación
-  const totalPaginas = Math.ceil(usuariosFiltrados.length / itemsPerPage) || 1;
-  const indiceInicio = (currentPage - 1) * itemsPerPage;
-  const usuariosPaginados = usuariosFiltrados.slice(indiceInicio, indiceInicio + itemsPerPage);
-
   const getIniciales = (nombre) => {
     if (!nombre) return 'US';
     return nombre.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
+
+  const indiceInicio = (currentPage - 1) * itemsPerPage;
 
   return (
     <div className="admin-page">
@@ -196,7 +214,7 @@ export default function GestionUsuarios() {
           <button
             className="admin-logout-btn"
             onClick={() => {
-              localStorage.removeItem('usuario_activo');
+              authService.logout();
               navigate('/');
             }}
           >
@@ -219,6 +237,12 @@ export default function GestionUsuarios() {
           </button>
         </div>
 
+        {apiError && (
+          <div style={{ backgroundColor: '#FEE2E2', color: '#991B1B', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
+            ⚠️ {apiError}
+          </div>
+        )}
+
         {/* Barra de búsqueda y filtro de tabla */}
         <div className="admin-toolbar">
           <div className="admin-search-box">
@@ -228,10 +252,10 @@ export default function GestionUsuarios() {
             </svg>
             <input
               type="text"
-              placeholder="Buscar usuarios..."
+              placeholder="Buscar usuarios por nombre o correo..."
               className="admin-search-input"
               value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+              onChange={handleSearchChange}
             />
           </div>
 
@@ -244,9 +268,9 @@ export default function GestionUsuarios() {
             <select
               className="admin-select"
               value={roleFilter}
-              onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }}
+              onChange={handleRoleFilterChange}
             >
-              <option value="Todos">Todos</option>
+              <option value="Todos">Todos los roles</option>
               <option value="Admin">Admin</option>
               <option value="Usuario">Usuario</option>
               <option value="Reclutador">Reclutador</option>
@@ -256,99 +280,109 @@ export default function GestionUsuarios() {
 
         {/* Tabla de Usuarios */}
         <div className="admin-table-card">
-          <table className="users-table">
-            <thead>
-              <tr>
-                <th>Usuario</th>
-                <th>Correo</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Fecha registro</th>
-                <th className="text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usuariosPaginados.map((user, idx) => (
-                <tr key={user.id || idx}>
-                  <td>
-                    <div className="user-info-cell">
-                      <div className={`user-avatar-circle ${(user.rol || 'usuario').toLowerCase()}`}>
-                        {getIniciales(user.nombre)}
-                      </div>
-                      <span className="user-name-text">{user.nombre}</span>
-                    </div>
-                  </td>
-                  <td className="email-cell">{user.email}</td>
-                  <td>
-                    <span className={`rol-badge rol-${(user.rol || 'usuario').toLowerCase()}`}>
-                      {user.rol || 'Usuario'}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className={`toggle-switch ${user.activo !== false ? 'active' : ''}`}
-                      onClick={() => handleToggleState(user)}
-                    >
-                      <span className="switch-thumb"></span>
-                    </button>
-                  </td>
-                  <td className="date-cell">{user.fecha || '12 Oct 2023'}</td>
-                  <td className="text-right">
-                    <div className="action-buttons">
-                      <button className="icon-btn edit-btn" onClick={() => handleOpenEdit(user)} title="Editar usuario">
-                        ✏️
-                      </button>
-                      <button className="icon-btn delete-btn" onClick={() => handleOpenDelete(user)} title="Eliminar usuario">
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {usuariosPaginados.length === 0 && (
-                <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '30px', color: '#6B7280' }}>
-                    No se encontraron usuarios.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {/* Footer de Paginación */}
-          <div className="admin-table-footer">
-            <span className="results-count">
-              Mostrando {usuariosFiltrados.length > 0 ? indiceInicio + 1 : 0} a {Math.min(indiceInicio + itemsPerPage, usuariosFiltrados.length)} de {usuariosFiltrados.length} resultados
-            </span>
-            <div className="pagination">
-              <button
-                className="page-btn"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-              >
-                &lt;
-              </button>
-
-              {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((num) => (
-                <button
-                  key={num}
-                  className={`page-btn ${currentPage === num ? 'page-active' : ''}`}
-                  onClick={() => setCurrentPage(num)}
-                >
-                  {num}
-                </button>
-              ))}
-
-              <button
-                className="page-btn"
-                disabled={currentPage === totalPaginas}
-                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPaginas))}
-              >
-                &gt;
-              </button>
+          {loading ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#6B7280' }}>
+              ⏳ Cargando usuarios desde la base de datos...
             </div>
-          </div>
+          ) : (
+            <>
+              <table className="users-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th className="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => {
+                    const rolLegible = getRolLegible(user);
+                    return (
+                      <tr key={user.id}>
+                        <td>
+                          <div className="user-info-cell">
+                            <div className={`user-avatar-circle ${rolLegible.toLowerCase()}`}>
+                              {getIniciales(user.nombre)}
+                            </div>
+                            <span className="user-name-text">{user.nombre}</span>
+                          </div>
+                        </td>
+                        <td className="email-cell">{user.email}</td>
+                        <td>
+                          <span className={`rol-badge rol-${rolLegible.toLowerCase()}`}>
+                            {rolLegible}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className={`toggle-switch ${user.activo !== false ? 'active' : ''}`}
+                            onClick={() => handleToggleState(user)}
+                            title={user.activo !== false ? 'Activo (Clic para suspender)' : 'Inactivo (Clic para activar)'}
+                          >
+                            <span className="switch-thumb"></span>
+                          </button>
+                        </td>
+                        <td className="text-right">
+                          <div className="action-buttons">
+                            <button className="icon-btn edit-btn" onClick={() => handleOpenEdit(user)} title="Editar usuario">
+                              ✏️
+                            </button>
+                            <button className="icon-btn delete-btn" onClick={() => handleOpenDelete(user)} title="Eliminar usuario">
+                              🗑️
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '30px', color: '#6B7280' }}>
+                        No se encontraron usuarios en la base de datos.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              {/* Footer de Paginación */}
+              <div className="admin-table-footer">
+                <span className="results-count">
+                  Mostrando {totalItems > 0 ? indiceInicio + 1 : 0} a {Math.min(indiceInicio + itemsPerPage, totalItems)} de {totalItems} resultados
+                </span>
+                <div className="pagination">
+                  <button
+                    className="page-btn"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                  >
+                    &lt;
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                    <button
+                      key={num}
+                      className={`page-btn ${currentPage === num ? 'page-active' : ''}`}
+                      onClick={() => setCurrentPage(num)}
+                    >
+                      {num}
+                    </button>
+                  ))}
+
+                  <button
+                    className="page-btn"
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                  >
+                    &gt;
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
 
@@ -357,7 +391,7 @@ export default function GestionUsuarios() {
         <div className="admin-modal-backdrop">
           <div className="admin-modal-card">
             <h2 className="admin-modal-title">Crear nuevo usuario</h2>
-            {formError && <p className="form-error" style={{ marginBottom: '12px' }}>{formError}</p>}
+            {formError && <p className="form-error" style={{ marginBottom: '12px', color: '#EF4444' }}>{formError}</p>}
             <form className="admin-modal-form" onSubmit={handleSaveCreate}>
               <div className="admin-form-group">
                 <label className="admin-label">Nombre completo</label>
@@ -386,7 +420,7 @@ export default function GestionUsuarios() {
                 <input
                   type="password"
                   className="admin-input"
-                  placeholder="password123"
+                  placeholder="Password123!"
                   value={formPassword}
                   onChange={(e) => setFormPassword(e.target.value)}
                 />
@@ -423,7 +457,7 @@ export default function GestionUsuarios() {
         <div className="admin-modal-backdrop">
           <div className="admin-modal-card">
             <h2 className="admin-modal-title">Editar usuario</h2>
-            {formError && <p className="form-error" style={{ marginBottom: '12px' }}>{formError}</p>}
+            {formError && <p className="form-error" style={{ marginBottom: '12px', color: '#EF4444' }}>{formError}</p>}
             <form className="admin-modal-form" onSubmit={handleSaveEdit}>
               <div className="admin-form-group">
                 <label className="admin-label">Nombre completo</label>
@@ -520,7 +554,7 @@ export default function GestionUsuarios() {
 
             <h2 className="admin-modal-title">¿Eliminar a {selectedUser?.nombre}?</h2>
             <p className="admin-modal-body">
-              Esta acción eliminará permanentemente la cuenta y todos sus datos.
+              Esta acción eliminará permanentemente la cuenta y todos sus datos de la base de datos.
             </p>
 
             <div className="admin-modal-buttons">
