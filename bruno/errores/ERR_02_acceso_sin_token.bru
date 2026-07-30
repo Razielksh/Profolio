@@ -1,0 +1,22 @@
+meta {
+  name: ERR - 02 Acceso a Ruta Admin sin Token (401)
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/admin/users
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status es 401 Unauthorized sin token JWT", function() {
+    expect(res.status).to.equal(401);
+  });
+
+  test("Respuesta de error en formato JSON estructurado", function() {
+    expect(res.body.status).to.equal(401);
+    expect(res.body.message).to.be.a("string");
+  });
+}

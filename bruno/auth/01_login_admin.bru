@@ -1,0 +1,41 @@
+meta {
+  name: 01 - Login (Admin)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@profolio.com",
+    "password": "Admin123!"
+  }
+}
+
+script:post-response {
+  // Guardar el token JWT en la variable de entorno para usarlo en las siguientes peticiones
+  if (res.status === 200) {
+    bru.setVar("jwtToken", res.body.token);
+  }
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Respuesta contiene token JWT", function() {
+    expect(res.body.token).to.be.a("string");
+    expect(res.body.token.length).to.be.greaterThan(0);
+  });
+
+  test("Respuesta contiene datos del usuario", function() {
+    expect(res.body.user).to.exist;
+    expect(res.body.user.email).to.equal("admin@profolio.com");
+  });
+}

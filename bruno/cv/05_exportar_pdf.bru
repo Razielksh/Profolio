@@ -1,0 +1,61 @@
+meta {
+  name: 05 - Exportar PDF de CV (Requiere Token)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/cv/export-pdf
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  {
+    "personal": {
+      "nombre": "Juan",
+      "apellido": "Pérez",
+      "titulo": "Desarrollador Full Stack",
+      "email": "juan@example.com",
+      "telefono": "+52 55 1234 5678",
+      "ubicacion": "Ciudad de México",
+      "linkedin": "linkedin.com/in/juanperez",
+      "resumen": "Desarrollador con 5 años de experiencia en tecnologías web modernas."
+    },
+    "experiencias": [
+      {
+        "puesto": "Senior Developer",
+        "empresa": "Tech Company",
+        "ubicacion": "CDMX",
+        "fecha": "2021 - Presente",
+        "descripcion": "Desarrollo de aplicaciones web escalables con React y Spring Boot."
+      }
+    ],
+    "educacion": [
+      {
+        "titulo": "Ingeniería en Sistemas",
+        "colegio": "UNAM",
+        "fecha": "2016 - 2020"
+      }
+    ],
+    "habilidades": ["Java", "Spring Boot", "React", "MySQL", "Docker"],
+    "estilos": {
+      "color": "#006654",
+      "font": "Inter"
+    }
+  }
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Respuesta es un archivo PDF (content-type)", function() {
+    expect(res.headers["content-type"]).to.include("application/pdf");
+  });
+}

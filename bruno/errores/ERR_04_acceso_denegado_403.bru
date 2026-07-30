@@ -1,0 +1,28 @@
+meta {
+  name: ERR - 04 Acceso a Admin con Token de Reclutador (403)
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/admin/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  // INSTRUCCIÓN: Primero ejecutar "02 - Login (Reclutador)" para obtener un token de reclutador,
+  // luego pegarlo aquí manualmente para probar el acceso denegado.
+  token: PEGAR_AQUI_TOKEN_DE_RECLUTADOR
+}
+
+tests {
+  test("Status es 403 Forbidden (rol insuficiente)", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Respuesta de error dice que no tiene permisos", function() {
+    expect(res.body.status).to.equal(403);
+    expect(res.body.error).to.equal("Forbidden");
+  });
+}

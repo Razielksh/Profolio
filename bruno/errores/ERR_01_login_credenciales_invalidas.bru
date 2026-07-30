@@ -1,0 +1,30 @@
+meta {
+  name: ERR - 01 Login con Credenciales Incorrectas (401)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "usuario@noexiste.com",
+    "password": "ClaveIncorrecta"
+  }
+}
+
+tests {
+  test("Status es 401 Unauthorized", function() {
+    expect(res.status).to.equal(401);
+  });
+
+  test("Respuesta de error en formato JSON estructurado", function() {
+    expect(res.body.status).to.equal(401);
+    expect(res.body.error).to.equal("Unauthorized");
+    expect(res.body.message).to.be.a("string");
+  });
+}

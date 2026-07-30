@@ -1,0 +1,33 @@
+meta {
+  name: 03 - Registro de Nuevo Usuario
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Juan Prueba",
+    "email": "juan.prueba@example.com",
+    "password": "Password123!"
+  }
+}
+
+tests {
+  test("Status es 201 Created", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Respuesta contiene token JWT para el nuevo usuario", function() {
+    expect(res.body.token).to.be.a("string");
+  });
+
+  test("El nombre del usuario registrado es correcto", function() {
+    expect(res.body.user.nombre).to.equal("Juan Prueba");
+  });
+}

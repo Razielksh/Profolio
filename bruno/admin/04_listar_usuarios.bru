@@ -1,0 +1,31 @@
+meta {
+  name: 04 - Listar Usuarios (Requiere Token Admin)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/admin/users?page=0&size=5&search=&role=Todos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Respuesta contiene lista paginada de usuarios", function() {
+    expect(res.body.users).to.be.an("array");
+    expect(res.body.totalItems).to.be.a("number");
+    expect(res.body.totalPages).to.be.a("number");
+  });
+
+  test("Hay al menos 1 usuario en el sistema", function() {
+    expect(res.body.totalItems).to.be.greaterThan(0);
+  });
+}

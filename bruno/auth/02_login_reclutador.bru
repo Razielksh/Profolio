@@ -1,0 +1,38 @@
+meta {
+  name: 02 - Login (Usuario Normal)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "reclutador@profolio.com",
+    "password": "Reclutador123!"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("jwtToken", res.body.token);
+  }
+}
+
+tests {
+  test("Status es 200 OK", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Token JWT generado correctamente", function() {
+    expect(res.body.token).to.be.a("string");
+  });
+
+  test("Rol del usuario es Reclutador", function() {
+    expect(res.body.user.roles).to.include("ROLE_RECLUTADOR");
+  });
+}
