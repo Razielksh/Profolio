@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
+import { cvService } from '../../services/api';
 import './CreacionDoc.css';
 
 // --- Utilidades para la librería de CVs en localStorage ---
@@ -48,35 +49,59 @@ export default function CreacionDoc() {
   const [activeSection, setActiveSection] = useState('personal');
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
+  // dbCvId: ID real de la BD (null si aún no se guardó)
+  const [dbCvId, setDbCvId] = useState(null);
 
   const usuarioActivo = JSON.parse(localStorage.getItem('usuario_activo') || '{}');
 
-  // Cargar datos del CV: si viene con cvId, cargamos ese; si no, nuevo vacío
-  const getInitialData = () => {
-    if (cvId) {
-      const lista = getAllCvs();
-      const found = lista.find(c => c.id === cvId);
-      if (found) return found;
-    }
-    return { id: null, titulo: 'Mi CV', ...defaultCvData(usuarioActivo) };
-  };
-
-  const initial = getInitialData();
-
-  const [cvTitulo, setCvTitulo] = useState(initial.titulo || 'Mi CV');
-  const [personal, setPersonal] = useState(initial.personal);
-  const [experiencias, setExperiencias] = useState(initial.experiencias || []);
-  const [educacion, setEducacion] = useState(initial.educacion || []);
-  const [habilidades, setHabilidades] = useState(initial.habilidades || []);
+  const initialData = defaultCvData(usuarioActivo);
+  const [cvTitulo, setCvTitulo] = useState('Mi CV');
+  const [personal, setPersonal] = useState(initialData.personal);
+  const [experiencias, setExperiencias] = useState([]);
+  const [educacion, setEducacion] = useState([]);
+  const [habilidades, setHabilidades] = useState([]);
   const [nuevaHabilidad, setNuevaHabilidad] = useState('');
-  const [estilos, setEstilos] = useState(initial.estilos || { color: '#006654', font: 'Inter' });
-  const [currentCvId] = useState(() => cvId || `cv_${Date.now()}`);
+  const [estilos, setEstilos] = useState({ color: '#006654', font: 'Inter' });
 
-  // Auto-guardar borrador en localStorage cada vez que cambia algo
+  // Cargar CV desde la BD si viene con cvId en la URL
   useEffect(() => {
-    const draft = { id: currentCvId, titulo: cvTitulo, personal, experiencias, educacion, habilidades, estilos };
-    localStorage.setItem(`profolio_draft_${currentCvId}`, JSON.stringify(draft));
-  }, [personal, experiencias, educacion, habilidades, estilos, cvTitulo, currentCvId]);
+    if (!cvId) return;
+    const numericId = parseInt(cvId, 10);
+    if (isNaN(numericId)) return;
+
+    cvService.getCvById(numericId)
+      .then(data => {
+        setDbCvId(data.id);
+        setCvTitulo(data.titulo || 'Mi CV');
+        setPersonal(prev => ({
+          ...prev,
+          nombre: data.nombreContacto?.split(' ')[0] || prev.nombre,
+          apellido: data.nombreContacto?.split(' ').slice(1).join(' ') || prev.apellido,
+          titulo: data.tituloProfesional || prev.titulo,
+          linkedin: data.linkedinUrl || prev.linkedin,
+          resumen: data.resumen || prev.resumen,
+        }));
+        setEstilos(prev => ({ ...prev, color: data.colorPrimario || prev.color }));
+        setExperiencias((data.experiencias || []).map(e => ({
+          id: e.id,
+          puesto: e.puesto,
+          empresa: e.empresa,
+          fecha: e.fecha || '',
+          descripcion: e.descripcion || '',
+        })));
+        setEducacion((data.educacion || []).map(e => ({
+          id: e.id,
+          titulo: e.titulo,
+          colegio: e.colegio,
+          fecha: e.fecha || '',
+        })));
+        setHabilidades((data.habilidades || []).map(h => h.nombre));
+      })
+      .catch(err => console.error('Error cargando CV:', err));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cvId]);
 
   const toggleSection = (section) => {
     setActiveSection(activeSection === section ? null : section);
@@ -137,28 +162,59 @@ export default function CreacionDoc() {
     setHabilidades(prev => prev.filter(h => h !== hab));
   };
 
-  // Guardar CV en la galería del usuario
-  const handleGuardarCV = () => {
-    const cvData = {
-      id: currentCvId,
-      titulo: cvTitulo,
-      personal,
-      experiencias,
-      educacion,
-      habilidades,
-      estilos,
-      fechaActualizacion: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-    };
-    saveCvToLibrary(cvData);
-    // Limpiar el borrador temporal
-    localStorage.removeItem(`profolio_draft_${currentCvId}`);
-    // Actualizar la URL con el ID del CV guardado (si era nuevo)
-    if (!cvId) {
-      navigate(`/creacion-doc?cvId=${currentCvId}`, { replace: true });
+  // Guardar CV en la base de datos
+  const handleGuardarCV = async () => {
+    setSaving(true);
+    setSaveError('');
+    try {
+      const payload = {
+        id: dbCvId || null,
+        titulo: cvTitulo,
+        colorPrimario: estilos.color || '#006654',
+        privacidad: 'PUBLICO',
+        nombreContacto: `${personal.nombre || ''} ${personal.apellido || ''}`.trim(),
+        tituloProfesional: personal.titulo || '',
+        linkedinUrl: personal.linkedin || '',
+        resumen: personal.resumen || '',
+        experiencias: experiencias.map((e, idx) => ({
+          id: typeof e.id === 'number' ? e.id : null,
+          puesto: e.puesto || 'Cargo',
+          empresa: e.empresa || 'Empresa',
+          fecha: e.fecha || '',
+          descripcion: e.descripcion || '',
+          orden: idx,
+        })),
+        educacion: educacion.map((e, idx) => ({
+          id: typeof e.id === 'number' ? e.id : null,
+          titulo: e.titulo || 'Título',
+          colegio: e.colegio || 'Institución',
+          fecha: e.fecha || '',
+          orden: idx,
+        })),
+        habilidades: habilidades.map((h, idx) => ({
+          id: null,
+          nombre: typeof h === 'string' ? h : h.nombre,
+          nivel: h.nivel || null,
+          orden: idx,
+        })),
+      };
+
+      const saved = await cvService.saveCv(payload);
+      setDbCvId(saved.id);
+
+      // Si es nuevo CV, actualizar la URL con el ID real de la BD
+      if (!cvId || isNaN(parseInt(cvId, 10))) {
+        navigate(`/creacion-doc?cvId=${saved.id}`, { replace: true });
+      }
+
+      setSavedToast(true);
+      setTimeout(() => setSavedToast(false), 3000);
+    } catch (err) {
+      console.error('Error guardando CV:', err);
+      setSaveError(err.message || 'Error al guardar en la base de datos');
+    } finally {
+      setSaving(false);
     }
-    // Mostrar toast de confirmación
-    setSavedToast(true);
-    setTimeout(() => setSavedToast(false), 3000);
   };
 
   // Exportar PDF vía backend
@@ -193,13 +249,19 @@ export default function CreacionDoc() {
 
   return (
     <div className="editor-page">
-      {/* Toast de guardado */}
+      {/* Toast de guardado exitoso */}
       {savedToast && (
         <div className="saved-toast">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
-          CV guardado correctamente
+          CV guardado en la base de datos ✓
+        </div>
+      )}
+      {/* Toast de error al guardar */}
+      {saveError && (
+        <div className="saved-toast" style={{ backgroundColor: '#EF4444' }}>
+          ⚠️ {saveError}
         </div>
       )}
 
@@ -229,13 +291,19 @@ export default function CreacionDoc() {
         </div>
 
         <div className="editor-nav-right">
-          <button className="btn-guardar-cv" onClick={handleGuardarCV}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-            Guardar CV
+          <button className="btn-guardar-cv" onClick={handleGuardarCV} disabled={saving}>
+            {saving ? (
+              <span>Guardando...</span>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Guardar CV
+              </>
+            )}
           </button>
 
           <button className="btn-descargar-pdf" onClick={handleDescargarPDF} disabled={loadingPdf}>

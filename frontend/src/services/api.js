@@ -158,3 +158,52 @@ export const userService = {
         return true;
     }
 };
+
+export const cvService = {
+    async saveCv(cvData) {
+        const response = await fetch(`${API_BASE_URL}/cv/save`, {
+            method: 'POST',
+            headers: authService.getAuthHeader(),
+            body: JSON.stringify(cvData),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al guardar el CV');
+        }
+        return data; // CvResponseDto con id, titulo, etc.
+    },
+
+    async getMyCvs() {
+        const response = await fetch(`${API_BASE_URL}/cv/my-cvs`, {
+            headers: authService.getAuthHeader(),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al obtener los CVs');
+        }
+        return data; // array de CvResponseDto
+    },
+
+    async getCvById(id) {
+        const response = await fetch(`${API_BASE_URL}/cv/${id}`, {
+            headers: authService.getAuthHeader(),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al obtener el CV');
+        }
+        return data; // CvResponseDto
+    },
+
+    async deleteCv(id) {
+        const response = await fetch(`${API_BASE_URL}/cv/${id}`, {
+            method: 'DELETE',
+            headers: authService.getAuthHeader(),
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Error al eliminar el CV');
+        }
+        return true;
+    }
+};
