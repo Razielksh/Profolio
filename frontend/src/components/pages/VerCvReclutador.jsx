@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import profolioIcon from '../../assets/profolio_icon.svg';
+import { cvService, contactService } from '../../services/api';
 import './VerCvReclutador.css';
 
 export default function VerCvReclutador() {
@@ -8,7 +9,10 @@ export default function VerCvReclutador() {
   const cvId = searchParams.get('cvId');
 
   const [cvData, setCvData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [showModalContact, setShowModalContact] = useState(false);
+  const [mensajeContacto, setMensajeContacto] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [channelEmail, setChannelEmail] = useState(true);
   const [channelSms, setChannelSms] = useState(false);
   const [channelWhatsapp, setChannelWhatsapp] = useState(false);
@@ -16,57 +20,91 @@ export default function VerCvReclutador() {
 
   useEffect(() => {
     if (cvId) {
-      const listaCvs = JSON.parse(localStorage.getItem('profolio_cvs_lista') || '[]');
-      const encontrado = listaCvs.find(c => c.id === cvId);
-      if (encontrado) {
-        setCvData(encontrado);
+      setLoading(true);
+      const numericId = parseInt(cvId, 10);
+      
+      if (!isNaN(numericId)) {
+        // Cargar desde la base de datos
+        cvService.getPublicCvById(numericId)
+          .then(data => {
+            setCvData(data);
+          })
+          .catch(err => {
+            console.error('Error al cargar CV real público:', err);
+          })
+          .finally(() => setLoading(false));
+      } else {
+        setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
   }, [cvId]);
 
-  // Datos por defecto (si es demo o no se encuentra el CV específico)
-  const personal = cvData?.personal || {
-    nombre: 'Alex',
-    apellido: 'Morgan',
-    titulo: 'Senior Frontend Developer',
-    email: 'alex.morgan@example.com',
-    telefono: '+1 (555) 019-2834',
-    ubicacion: 'San Francisco, CA',
-    resumen: 'Desarrollador de software apasionado con más de 6 años de experiencia en la creación de aplicaciones web escalables y eficientes con arquitecturas modernas.'
+  // Datos procesados desde el backend (o demo solo si no existe cvData en absoluto)
+  const isRealCv = cvData !== null;
+
+  const personal = {
+    nombre: isRealCv ? (cvData.nombreContacto || 'Sin nombre') : 'Alex Morgan',
+    titulo: isRealCv ? (cvData.tituloProfesional || cvData.titulo || 'Sin título profesional') : 'Senior Frontend Developer',
+    email: cvData?.email || 'alex.morgan@example.com',
+    telefono: cvData?.telefono || '+52 (55) 0000-0000',
+    ubicacion: cvData?.ubicacion || 'México',
+    linkedin: cvData?.linkedinUrl || '',
+    resumen: isRealCv ? (cvData.resumen || '') : 'Desarrollador de software apasionado con más de 6 años de experiencia en la creación de aplicaciones web escalables y eficientes.'
   };
 
-  const experiencias = cvData?.experiencias || [
-    {
-      id: 1,
-      empresa: 'TechNova Solutions',
-      puesto: 'Lead Frontend Engineer',
-      fecha: 'Oct 2020 – Actualidad',
-      descripcion: 'Lideré el equipo de desarrollo frontend, optimizando el rendimiento de la aplicación en un 40% e implementando CI/CD.'
-    },
-    {
-      id: 2,
-      empresa: 'Creative Digital Agency',
-      puesto: 'Frontend Developer',
-      fecha: 'Jun 2017 – Sep 2020',
-      descripcion: 'Desarrollo de interfaces dinámicas y aplicaciones web responsivas utilizando React y CSS modular.'
-    }
-  ];
+  const experiencias = isRealCv
+    ? (cvData.experiencias || [])
+    : [
+        {
+          id: 1,
+          empresa: 'TechNova Solutions',
+          puesto: 'Lead Engineer',
+          fecha: 'Oct 2020 – Actualidad',
+          descripcion: 'Lideré el equipo de desarrollo, optimizando el rendimiento de la aplicación en un 40% e implementando CI/CD.'
+        }
+      ];
 
-  const habilidades = cvData?.habilidades || ['React', 'TypeScript', 'Next.js', 'Tailwind CSS', 'GraphQL', 'CI/CD'];
-  const educacion = cvData?.educacion || [
-    {
-      id: 1,
-      titulo: 'Licenciatura en Ciencias de la Computación',
-      colegio: 'Universidad de California',
-      fecha: '2013 - 2017'
-    }
-  ];
+  const habilidades = isRealCv
+    ? (cvData.habilidades || []).map(h => typeof h === 'string' ? h : h.nombre)
+    : ['React', 'JavaScript', 'Node.js', 'SQL'];
 
-  const handleEnviarContacto = (e) => {
+  const educacion = isRealCv
+    ? (cvData.educacion || [])
+    : [
+        {
+          id: 1,
+          titulo: 'Licenciatura en Ciencias de la Computación',
+          colegio: 'Universidad Nacional',
+          fecha: '2015 - 2019'
+        }
+      ];
+
+  const handleEnviarContacto = async (e) => {
     e.preventDefault();
-    setShowModalContact(false);
-    setSentNotification(true);
-    setTimeout(() => setSentNotification(false), 4000);
+    setSendingEmail(true);
+
+    const textoMensaje = mensajeContacto || `Hola ${personal.nombre}, hemos revisado tu perfil en Profolio y estamos interesados en agendar una entrevista con nuestro equipo.`;
+
+    try {
+      if (channelEmail) {
+        await contactService.enviarCorreoContacto({
+          to: personal.email,
+          subject: `Oportunidad laboral: Profolio se interesa en tu perfil (${personal.titulo})`,
+          message: textoMensaje,
+        });
+      }
+
+      setShowModalContact(false);
+      setSentNotification(true);
+      setTimeout(() => setSentNotification(false), 4000);
+    } catch (error) {
+      console.error('Error enviando contacto:', error);
+      alert('⚠️ ' + error.message);
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   return (
@@ -216,7 +254,8 @@ export default function VerCvReclutador() {
                   className="modal-textarea"
                   rows="4"
                   placeholder="Escribe un mensaje profesional..."
-                  defaultValue={`Hola ${personal.nombre}, hemos revisado tu perfil en Profolio y estamos interesados en agendar una entrevista con nuestro equipo.`}
+                  value={mensajeContacto}
+                  onChange={(e) => setMensajeContacto(e.target.value)}
                 ></textarea>
               </div>
 
@@ -280,12 +319,8 @@ export default function VerCvReclutador() {
                   <button type="button" className="close-btn" style={{ padding: '9px 18px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '0.88rem', fontWeight: '600', color: '#374151', cursor: 'pointer' }} onClick={() => setShowModalContact(false)}>
                     Cancelar
                   </button>
-                  <button type="submit" className="btn-modal-send">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="22" y1="2" x2="11" y2="13"></line>
-                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                    Enviar mensaje
+                  <button type="submit" className="btn-modal-submit" disabled={sendingEmail}>
+                    {sendingEmail ? 'Enviando correo...' : 'Enviar Mensaje'}
                   </button>
                 </div>
               </div>
